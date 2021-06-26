@@ -14,14 +14,18 @@
 
 #define termios asmtermios
 
-#include <asm/termios.h>
+#include <asm/ioctls.h>
+#include <sys/ioctl.h>
+#include <asm/termbits.h>
+
+// #include <asm/termios.h> // Failing when building so change this code
 
 #undef termios
 
 #include <termios.h>
 #include <math.h>
 #include <pthread.h>
-#include <stropts.h>
+// #include <stropts.h> // Failing when building so change this code
 #include <endian.h>
 #include <stdint.h>
 
