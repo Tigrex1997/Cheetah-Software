@@ -312,6 +312,14 @@ void ControlFSM<T>::printInfo(int opt) {
         }
         std::cout << "Gait Type: " << data._gaitScheduler->gaitData.gaitName
                   << "\n";
+
+        // Custom printing info
+        std::cout<< "(Custom outputs1) Rc mode: "<< data._desiredStateCommand->rcCommand->mode
+                  << "\n";
+
+        std::cout<< "(Custom outputs2) Locomotion mode: "<< data._desiredStateCommand->rcCommand->variable[0]
+                  << "\n";
+                  
         std::cout << std::endl;
 
         // Reset iteration counter

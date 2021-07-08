@@ -14,6 +14,8 @@ class rc_control_settings {
     double     rpy_des[3]; // -1 ~ 1
     double     omega_des[3]; // -1 ~ 1
     double     variable[3];
+
+    double     tauFeedForwardBias_des[3];
 };
 
 

@@ -146,17 +146,32 @@ void sbus_packet_complete() {
       selected_mode == RC_mode::TWO_LEG_STANCE) {
     //rc_control.rpy_des[0] = data.left_stick[0] * 1.4;
     //rc_control.rpy_des[1] = data.right_stick[1] * 0.46;
+    
+    // Origin
+    /*
     rc_control.rpy_des[0] = data.left_stick[0];
     rc_control.rpy_des[1] = data.right_stick[1];
     rc_control.rpy_des[2] = data.right_stick[0];
 
     rc_control.height_variation = data.left_stick[1];
+    */
 
     rc_control.omega_des[0] = 0;
     rc_control.omega_des[1] = 0;
     rc_control.omega_des[2] = 0;
     //rc_control.p_des[1] = -0.667 * rc_control.rpy_des[0];
     //rc_control.p_des[2] = data.left_stick[1] * .12;
+
+    // Custom
+    rc_control.rpy_des[0] = 0;
+    rc_control.rpy_des[1] = 0;
+    rc_control.rpy_des[2] = 0;
+
+    rc_control.height_variation = 0;
+
+    rc_control.tauFeedForwardBias_des[0] = data.left_stick[0];
+    rc_control.tauFeedForwardBias_des[1] = data.right_stick[0];
+    rc_control.tauFeedForwardBias_des[2] = data.right_stick[1];
   } 
   break;
 }

@@ -25,6 +25,10 @@ void LegControllerCommand<T>::zero() {
   kdCartesian = Mat3<T>::Zero();
   kpJoint = Mat3<T>::Zero();
   kdJoint = Mat3<T>::Zero();
+
+  tauFeedForwardBias = Vec3<T>::Zero();
+  kpJointBias = Mat3<T>::Zero();
+  kdJointBias = Mat3<T>::Zero();
 }
 
 /*!
@@ -175,6 +179,43 @@ void LegController<T>::updateCommand(SpiCommand* spiCommand) {
         commands[leg].kdJoint * (commands[leg].qdDes - datas[leg].qd);
 
     spiCommand->flags[leg] = _legsEnabled ? 1 : 0;
+
+    // Custom
+    // if (leg == 0)
+    // {
+    //   datas[leg].tauEstimate[0] = 0;
+    //   datas[leg].tauEstimate[1] = 0;
+    //   datas[leg].tauEstimate[2] = 0;
+    // }
+
+    // if (leg == 0)
+    // {
+    //   spiCommand->q_des_abad[leg] = 0;
+    //   spiCommand->q_des_hip[leg] = 0;
+    //   spiCommand->q_des_knee[leg] = 0;
+
+    //   spiCommand->qd_des_abad[leg] = 0;
+    //   spiCommand->qd_des_hip[leg] = 0;
+    //   spiCommand->qd_des_knee[leg] = 0;
+    // }
+
+    if (leg == 0)
+    {
+      // set command:
+      spiCommand->tau_abad_ff[leg] += commands[leg].tauFeedForwardBias(0)*10;
+      spiCommand->tau_hip_ff[leg] += commands[leg].tauFeedForwardBias(1)*10;
+      spiCommand->tau_knee_ff[leg] += commands[leg].tauFeedForwardBias(2)*10;
+
+      // joint space pd
+      // joint space PD
+      // spiCommand->kd_abad[leg] = 0;
+      // spiCommand->kd_hip[leg] = 0;
+      // spiCommand->kd_knee[leg] = 0;
+
+      // spiCommand->kp_abad[leg] = 0;
+      // spiCommand->kp_hip[leg] = 0;
+      // spiCommand->kp_knee[leg] = 0;
+    }
   }
 }
 

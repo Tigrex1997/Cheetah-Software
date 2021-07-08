@@ -122,6 +122,27 @@ void WBC_Ctrl<T>::_UpdateLegCMD(ControlFSMData<T> & data){
         //cmd[leg].kdJoint(jidx, jidx) = _Kd_joint_swing[jidx];
       //}
 
+      // Custom
+      // if (leg == 0)
+      // {
+      //   cmd[leg].kpJoint(jidx, jidx) = 0;
+      //   cmd[leg].kdJoint(jidx, jidx) = 0;
+      // }
+    }
+
+    // Custom
+    if (leg == 0)
+    {
+      // cmd[leg].tauFeedForward[jidx] = _tau_ff[cheetah::num_leg_joint * leg + jidx];
+      // cmd[leg].qDes[jidx] = _des_jpos[cheetah::num_leg_joint * leg + jidx];
+      // cmd[leg].qdDes[jidx] = _des_jvel[cheetah::num_leg_joint * leg + jidx];
+
+      // cmd[leg].kpJoint(jidx, jidx) = _Kp_joint[jidx];
+      // cmd[leg].kdJoint(jidx, jidx) = _Kd_joint[jidx];
+
+      cmd[leg].tauFeedForwardBias[0] = data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[0];
+      cmd[leg].tauFeedForwardBias[1] = data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[1];
+      cmd[leg].tauFeedForwardBias[2] = data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[2];
     }
   }
 

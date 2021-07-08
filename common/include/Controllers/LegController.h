@@ -30,6 +30,9 @@ struct LegControllerCommand {
 
   Vec3<T> tauFeedForward, forceFeedForward, qDes, qdDes, pDes, vDes;
   Mat3<T> kpCartesian, kdCartesian, kpJoint, kdJoint;
+
+  Vec3<T> tauFeedForwardBias;
+  Mat3<T> kpJointBias, kdJointBias;
 };
 
 /*!

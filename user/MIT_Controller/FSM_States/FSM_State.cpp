@@ -163,6 +163,9 @@ void FSM_State<T>::runControls() {
           -_data->_quadruped->_maxLegLength / 2;
     }  // footstepHeuristicPlacement();
 
+    // Print custom message
+    std::cout << "(Custom outputs3) Using BalanceController."
+              << std::endl;
   } else if (CONTROLLER_OPTION == 2) {
     // WBC
     runWholeBodyController();
