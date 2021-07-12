@@ -122,3 +122,7 @@ Just make sure set JAVA usage as openjdk-8-jdk to avoid building failures (openj
 Under `Cheetah-Software/build` folder:\
 `./user/MIT_Controller/mit_ctrl m s`
 After starting the controller, the robot will stretch out 4 legs and stand up.
+
+### Data Processing
+1. LCM Usage:\
+Use LCM (https://lcm-proj.github.io/) to connect the control interface to the actual mini cheetah hardware, and also as a debugging tool when running the simulator. The make_types.sh script runs an LCM tool to generate C++ header files for the LCM data types. When the simulator is running, you can run scripts/launch_lcm_spy.sh to open the LCM spy utility, which shows detailed information from the simulator and controller. You can click on data streams to plot them, which is nice for debugging. There is also a tool called lcm-logger which can save LCM data to a file.

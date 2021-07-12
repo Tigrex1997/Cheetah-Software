@@ -26,6 +26,9 @@
 
 #define K_INVALID 100
 
+// Custom
+#define K_BALANCE_STAND_FRICTION_EST 22
+
 /**
  * Enumerate all of the FSM states so we can keep track of them.
  */
@@ -40,7 +43,9 @@ enum class FSM_StateName {
   RECOVERY_STAND,
   VISION,
   BACKFLIP,
-  FRONTJUMP
+  FRONTJUMP,
+  // Custom
+  BALANCE_STAND_FRICTION_EST
 };
 
 /**

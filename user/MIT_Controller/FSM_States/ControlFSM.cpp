@@ -52,6 +52,8 @@ ControlFSM<T>::ControlFSM(Quadruped<T>* _quadruped,
   statesList.vision = new FSM_State_Vision<T>(&data);
   statesList.backflip = new FSM_State_BackFlip<T>(&data);
   statesList.frontJump = new FSM_State_FrontJump<T>(&data);
+  // Custom
+  statesList.balanceStandFrictionEst = new FSM_State_BalanceStandFrictionEst<T>(&data);
 
   safetyChecker = new SafetyChecker<T>(&data);
 
@@ -112,7 +114,10 @@ void ControlFSM<T>::runFSM() {
 
     } else if(rc_mode == RC_mode::BACKFLIP || rc_mode == RC_mode::BACKFLIP_PRE){
       data.controlParameters->control_mode = K_BACKFLIP;
-   }
+
+    } else if(rc_mode == RC_mode::QP_STAND_FRICTION_EST){
+      data.controlParameters->control_mode = K_BALANCE_STAND_FRICTION_EST;
+    }
       //data.controlParameters->control_mode = K_FRONTJUMP;
     //std::cout<< "control mode: "<<data.controlParameters->control_mode<<std::endl;
   }
@@ -272,6 +277,9 @@ FSM_State<T>* ControlFSM<T>::getNextState(FSM_StateName stateName) {
 
     case FSM_StateName::FRONTJUMP:
       return statesList.frontJump;
+
+    case FSM_StateName::BALANCE_STAND_FRICTION_EST:
+      return statesList.balanceStandFrictionEst;
 
     default:
       return statesList.invalid;

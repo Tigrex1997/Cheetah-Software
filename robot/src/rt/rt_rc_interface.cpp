@@ -80,6 +80,8 @@ void sbus_packet_complete() {
 
       // backflip
       if(mode_selection_switch == SWITCH_MIDDLE) {
+        // Origin
+        /*
         selected_mode = RC_mode::BACKFLIP_PRE;
 
         if(mode_go_switch == SWITCH_DOWN && initial_mode_go_switch != SWITCH_DOWN) {
@@ -87,6 +89,10 @@ void sbus_packet_complete() {
         } else if(mode_go_switch == SWITCH_UP) {
           initial_mode_go_switch = SWITCH_UP;
         }
+        */
+
+        // Custom
+        selected_mode = RC_mode::QP_STAND_FRICTION_EST;
       } // Experiment Mode
       else if(mode_selection_switch == SWITCH_DOWN){
         int mode_id = left_select * 3 + right_select;
@@ -148,6 +154,34 @@ void sbus_packet_complete() {
     //rc_control.rpy_des[1] = data.right_stick[1] * 0.46;
     
     // Origin
+    rc_control.rpy_des[0] = data.left_stick[0];
+    rc_control.rpy_des[1] = data.right_stick[1];
+    rc_control.rpy_des[2] = data.right_stick[0];
+
+    rc_control.height_variation = data.left_stick[1];
+    
+
+    rc_control.omega_des[0] = 0;
+    rc_control.omega_des[1] = 0;
+    rc_control.omega_des[2] = 0;
+    //rc_control.p_des[1] = -0.667 * rc_control.rpy_des[0];
+    //rc_control.p_des[2] = data.left_stick[1] * .12;
+
+    // Custom
+    // rc_control.rpy_des[0] = 0;
+    // rc_control.rpy_des[1] = 0;
+    // rc_control.rpy_des[2] = 0;
+
+    // rc_control.height_variation = 0;
+
+    // rc_control.tauFeedForwardBias_des[0] = data.left_stick[0];
+    // rc_control.tauFeedForwardBias_des[1] = data.right_stick[0];
+    // rc_control.tauFeedForwardBias_des[2] = data.right_stick[1];
+  } else if(selected_mode == RC_mode::QP_STAND_FRICTION_EST) {
+    //rc_control.rpy_des[0] = data.left_stick[0] * 1.4;
+    //rc_control.rpy_des[1] = data.right_stick[1] * 0.46;
+    
+    // Origin
     /*
     rc_control.rpy_des[0] = data.left_stick[0];
     rc_control.rpy_des[1] = data.right_stick[1];
@@ -172,7 +206,7 @@ void sbus_packet_complete() {
     rc_control.tauFeedForwardBias_des[0] = data.left_stick[0];
     rc_control.tauFeedForwardBias_des[1] = data.right_stick[0];
     rc_control.tauFeedForwardBias_des[2] = data.right_stick[1];
-  } 
+  }
   break;
 }
 

@@ -1,10 +1,10 @@
-/*=========================== Balance Stand ===========================*/
+/*=========================== Balance Stand for friction estimation (Custom) ===========================*/
 /**
  * FSM State that forces all legs to be on the ground and uses the QP
- * Balance controller for instantaneous balance control.
+ * Balance controller (FrictionEst) for instantaneous balance control.
  */
 
-#include "FSM_State_BalanceStand.h"
+#include "FSM_State_BalanceStandFrictionEst.h"
 #include <Controllers/WBC_Ctrl/LocomotionCtrl/LocomotionCtrl.hpp>
 
 /**
@@ -14,9 +14,9 @@
  * @param _controlFSMData holds all of the relevant control data
  */
 template <typename T>
-FSM_State_BalanceStand<T>::FSM_State_BalanceStand(
+FSM_State_BalanceStandFrictionEst<T>::FSM_State_BalanceStandFrictionEst(
     ControlFSMData<T>* _controlFSMData)
-    : FSM_State<T>(_controlFSMData, FSM_StateName::BALANCE_STAND,"BALANCE_STAND") {
+    : FSM_State<T>(_controlFSMData, FSM_StateName::BALANCE_STAND_FRICTION_EST,"BALANCE_STAND_FRICTION_EST") {
   // Set the pre controls safety checks
   this->turnOnAllSafetyChecks();
   // Turn off Foot pos command since it is set in WBC as operational task
@@ -33,7 +33,7 @@ FSM_State_BalanceStand<T>::FSM_State_BalanceStand(
 }
 
 template <typename T>
-void FSM_State_BalanceStand<T>::onEnter() {
+void FSM_State_BalanceStandFrictionEst<T>::onEnter() {
   // Default is to not transition
   this->nextStateName = this->stateName;
 
@@ -59,11 +59,11 @@ void FSM_State_BalanceStand<T>::onEnter() {
  * Calls the functions to be executed on each control loop iteration.
  */
 template <typename T>
-void FSM_State_BalanceStand<T>::run() {
+void FSM_State_BalanceStandFrictionEst<T>::run() {
   Vec4<T> contactState;
   contactState<< 0.5, 0.5, 0.5, 0.5;
   this->_data->_stateEstimator->setContactPhase(contactState);
-  BalanceStandStep();
+  BalanceStandFrictionEstStep();
 }
 
 /**
@@ -73,13 +73,13 @@ void FSM_State_BalanceStand<T>::run() {
  * @return the enumerated FSM state name to transition into
  */
 template <typename T>
-FSM_StateName FSM_State_BalanceStand<T>::checkTransition() {
+FSM_StateName FSM_State_BalanceStandFrictionEst<T>::checkTransition() {
   // Get the next state
   _iter++;
 
   // Switch FSM control mode
   switch ((int)this->_data->controlParameters->control_mode) {
-    case K_BALANCE_STAND:
+    case K_BALANCE_STAND_FRICTION_EST:
       // Normal operation for state based transitions
 
       // Need a working state estimator for this
@@ -107,16 +107,25 @@ FSM_StateName FSM_State_BalanceStand<T>::checkTransition() {
       }*/
       break;
 
-    case K_LOCOMOTION:
-      // Requested change to balance stand
-      this->nextStateName = FSM_StateName::LOCOMOTION;
+    case K_BALANCE_STAND:
+      // Requested change to BALANCE_STAND
+      this->nextStateName = FSM_StateName::BALANCE_STAND;
 
-      // Transition instantaneously to locomotion state on request
+      // Transition time is immediate
       this->transitionDuration = 0.0;
 
-      // Set the next gait in the scheduler to
-      this->_data->_gaitScheduler->gaitData._nextGait = GaitType::TROT;
       break;
+
+    // case K_LOCOMOTION:
+    //   // Requested change to balance stand
+    //   this->nextStateName = FSM_StateName::LOCOMOTION;
+
+    //   // Transition instantaneously to locomotion state on request
+    //   this->transitionDuration = 0.0;
+
+    //   // Set the next gait in the scheduler to
+    //   this->_data->_gaitScheduler->gaitData._nextGait = GaitType::TROT;
+    //   break;
 
     case K_PASSIVE:
       this->nextStateName = FSM_StateName::PASSIVE;
@@ -125,11 +134,11 @@ FSM_StateName FSM_State_BalanceStand<T>::checkTransition() {
 
       break;
 
-    case K_VISION:
-      this->nextStateName = FSM_StateName::VISION;
-      // Transition time is immediate
-      this->transitionDuration = 0.0;
-      break;
+    // case K_VISION:
+    //   this->nextStateName = FSM_StateName::VISION;
+    //   // Transition time is immediate
+    //   this->transitionDuration = 0.0;
+    //   break;
 
     case K_RECOVERY_STAND:
       this->nextStateName = FSM_StateName::RECOVERY_STAND;
@@ -137,22 +146,14 @@ FSM_StateName FSM_State_BalanceStand<T>::checkTransition() {
       this->transitionDuration = 0.0;
       break;
 
-    case K_BACKFLIP:
-      this->nextStateName = FSM_StateName::BACKFLIP;
-      this->transitionDuration = 0.;
-      break;
-
-    // Custom
-    case K_BALANCE_STAND_FRICTION_EST:
-      // Requested change to BALANCE_STAND_FRICTION_EST
-      this->nextStateName = FSM_StateName::BALANCE_STAND_FRICTION_EST;
-      // Transition time is immediate
-      this->transitionDuration = 0.0;
-      break;
+    // case K_BACKFLIP:
+    //   this->nextStateName = FSM_StateName::BACKFLIP;
+    //   this->transitionDuration = 0.;
+    //   break;
 
     default:
       std::cout << "[CONTROL FSM] Bad Request: Cannot transition from "
-                << K_BALANCE_STAND << " to "
+                << K_BALANCE_STAND_FRICTION_EST << " to "
                 << this->_data->controlParameters->control_mode << std::endl;
   }
 
@@ -167,19 +168,23 @@ FSM_StateName FSM_State_BalanceStand<T>::checkTransition() {
  * @return true if transition is complete
  */
 template <typename T>
-TransitionData<T> FSM_State_BalanceStand<T>::transition() {
+TransitionData<T> FSM_State_BalanceStandFrictionEst<T>::transition() {
   // Switch FSM control mode
   switch (this->nextStateName) {
-    case FSM_StateName::LOCOMOTION:
-      BalanceStandStep();
+    // case FSM_StateName::LOCOMOTION:
+    //   BalanceStandFrictionEstStep();
 
-      _iter++;
-      if (_iter >= this->transitionDuration * 1000) {
-        this->transitionData.done = true;
-      } else {
-        this->transitionData.done = false;
-      }
+    //   _iter++;
+    //   if (_iter >= this->transitionDuration * 1000) {
+    //     this->transitionData.done = true;
+    //   } else {
+    //     this->transitionData.done = false;
+    //   }
 
+    //   break;
+
+    case FSM_StateName::BALANCE_STAND:
+      this->transitionData.done = true;
       break;
 
     case FSM_StateName::PASSIVE:
@@ -191,18 +196,13 @@ TransitionData<T> FSM_State_BalanceStand<T>::transition() {
       this->transitionData.done = true;
       break;
 
-    case FSM_StateName::BACKFLIP:
-      this->transitionData.done = true;
-      break;
+    // case FSM_StateName::BACKFLIP:
+    //   this->transitionData.done = true;
+    //   break;
 
-    case FSM_StateName::VISION:
-      this->transitionData.done = true;
-      break;
-
-    // Custom
-    case FSM_StateName::BALANCE_STAND_FRICTION_EST:
-      this->transitionData.done = true;
-      break;
+    // case FSM_StateName::VISION:
+    //   this->transitionData.done = true;
+    //   break;
 
     default:
       std::cout << "[CONTROL FSM] Something went wrong in transition"
@@ -217,7 +217,7 @@ TransitionData<T> FSM_State_BalanceStand<T>::transition() {
  * Cleans up the state information on exiting the state.
  */
 template <typename T>
-void FSM_State_BalanceStand<T>::onExit() {
+void FSM_State_BalanceStandFrictionEst<T>::onExit() {
   _iter = 0;
 }
 
@@ -225,7 +225,7 @@ void FSM_State_BalanceStand<T>::onExit() {
  * Calculate the commands for the leg controllers for each of the feet.
  */
 template <typename T>
-void FSM_State_BalanceStand<T>::BalanceStandStep() {
+void FSM_State_BalanceStandFrictionEst<T>::BalanceStandFrictionEstStep() {
 
   _wbc_data->pBody_des = _ini_body_pos;
   _wbc_data->vBody_des.setZero();
@@ -278,4 +278,4 @@ void FSM_State_BalanceStand<T>::BalanceStandStep() {
 }
 
 // template class FSM_State_BalanceStand<double>;
-template class FSM_State_BalanceStand<float>;
+template class FSM_State_BalanceStandFrictionEst<float>;
