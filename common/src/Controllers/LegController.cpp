@@ -178,6 +178,10 @@ void LegController<T>::updateCommand(SpiCommand* spiCommand) {
         commands[leg].kpJoint * (commands[leg].qDes - datas[leg].q) +
         commands[leg].kdJoint * (commands[leg].qdDes - datas[leg].qd);
 
+    datas[leg].tauFeedforward = legTorque;
+    datas[leg].tauFeedback = commands[leg].kpJoint * (commands[leg].qDes - datas[leg].q) +
+      commands[leg].kdJoint * (commands[leg].qdDes - datas[leg].qd);
+
     spiCommand->flags[leg] = _legsEnabled ? 1 : 0;
 
     // Custom
@@ -201,10 +205,24 @@ void LegController<T>::updateCommand(SpiCommand* spiCommand) {
 
     if (leg == 0)
     {
+      // Safety code temp
+      if ((datas[leg].q(0) > 0.4) || (datas[leg].q(0) < -0.4))
+      {
+        commands[leg].tauFeedForwardBias(0) = 0;
+      }
+      if ((datas[leg].q(1) > -0.5) || (datas[leg].q(1) < -1.1))
+      {
+        commands[leg].tauFeedForwardBias(1) = 0;
+      }
+      if ((datas[leg].q(2) > 1.93) || (datas[leg].q(2) < 1.33))
+      {
+        commands[leg].tauFeedForwardBias(2) = 0;
+      }
+
       // set command:
-      spiCommand->tau_abad_ff[leg] += commands[leg].tauFeedForwardBias(0)*10;
-      spiCommand->tau_hip_ff[leg] += commands[leg].tauFeedForwardBias(1)*10;
-      spiCommand->tau_knee_ff[leg] += commands[leg].tauFeedForwardBias(2)*10;
+      spiCommand->tau_abad_ff[leg] += commands[leg].tauFeedForwardBias(0)*5;
+      spiCommand->tau_hip_ff[leg] += commands[leg].tauFeedForwardBias(1)*5;
+      spiCommand->tau_knee_ff[leg] += commands[leg].tauFeedForwardBias(2)*5;
 
       // joint space pd
       // joint space PD
@@ -215,6 +233,10 @@ void LegController<T>::updateCommand(SpiCommand* spiCommand) {
       // spiCommand->kp_abad[leg] = 0;
       // spiCommand->kp_hip[leg] = 0;
       // spiCommand->kp_knee[leg] = 0;
+
+      // Custom printing info
+      // std::cout<< "(Custom outputs4) q: "<< datas[leg].q
+      //           << "\n";
     }
   }
 }
@@ -258,6 +280,18 @@ void LegController<T>::updateCommand(TiBoardCommand* tiBoardCommand) {
       tiBoardCommand[leg].enable = 0;
     }
 
+  }
+}
+
+/*  added for contact estimation */
+template<typename T>
+void LegController<T>::setLcm(contact_data_lcmt* lcmData) {
+  for (int leg = 0; leg < 4; leg++) {
+    for (int axis = 0; axis < 3; axis++) {
+      int idx = leg*3 + axis;
+      lcmData->tau_feed_forward[idx] = datas[leg].tauFeedforward[axis];
+      lcmData->tau_feed_back[idx] = datas[leg].tauFeedback[axis];
+    }    
   }
 }
 

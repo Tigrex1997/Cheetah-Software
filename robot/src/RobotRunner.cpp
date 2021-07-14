@@ -210,9 +210,11 @@ void RobotRunner::finalizeStep() {
     assert(false);
   }
   _legController->setLcm(&leg_control_data_lcm, &leg_control_command_lcm);
+  _legController->setLcm(&contact_data_lcm);
   _stateEstimate.setLcm(state_estimator_lcm);
   _lcm.publish("leg_control_command", &leg_control_command_lcm);
   _lcm.publish("leg_control_data", &leg_control_data_lcm);
+  _lcm.publish("contact_data", &contact_data_lcm);
   _lcm.publish("state_estimator", &state_estimator_lcm);
   _iterations++;
 }

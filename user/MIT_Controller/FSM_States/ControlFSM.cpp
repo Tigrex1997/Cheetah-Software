@@ -327,6 +327,9 @@ void ControlFSM<T>::printInfo(int opt) {
 
         std::cout<< "(Custom outputs2) Locomotion mode: "<< data._desiredStateCommand->rcCommand->variable[0]
                   << "\n";
+
+        // std::cout<< "(Custom outputs3) q: "<< data._stateEstimator._data.legControllerData[0].q
+        //           << "\n";
                   
         std::cout << std::endl;
 

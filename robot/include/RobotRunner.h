@@ -24,6 +24,7 @@
 #include "Utilities/PeriodicTask.h"
 #include "cheetah_visualization_lcmt.hpp"
 #include "state_estimator_lcmt.hpp"
+#include "leg_control_data_lcmt.hpp"
 #include "RobotController.h"
 #include <lcm-cpp.hpp>
 
@@ -76,6 +77,7 @@ class RobotRunner : public PeriodicTask {
   state_estimator_lcmt state_estimator_lcm;
   leg_control_data_lcmt leg_control_data_lcm;
   // Contact Estimator to calculate estimated forces and contacts
+  contact_data_lcmt contact_data_lcm;
 
   FloatingBaseModel<float> _model;
   u64 _iterations = 0;

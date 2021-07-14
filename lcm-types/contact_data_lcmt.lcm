@@ -1,0 +1,4 @@
+struct contact_data_lcmt {
+    float tau_feed_forward[12];
+    float tau_feed_back[12];
+}
