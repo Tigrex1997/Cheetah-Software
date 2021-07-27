@@ -130,20 +130,26 @@ void WBC_Ctrl<T>::_UpdateLegCMD(ControlFSMData<T> & data){
       // }
     }
 
-    // Custom
-    if (leg == 0)
+    // Custom (temp modification in the original controller)
+    if(leg == 0) //RF leg
     {
-      // cmd[leg].tauFeedForward[jidx] = _tau_ff[cheetah::num_leg_joint * leg + jidx];
-      // cmd[leg].qDes[jidx] = _des_jpos[cheetah::num_leg_joint * leg + jidx];
-      // cmd[leg].qdDes[jidx] = _des_jvel[cheetah::num_leg_joint * leg + jidx];
+      if(data._desiredStateCommand->rcCommand->mode == 22)
+      {
+        // cmd[leg].tauFeedForward[jidx] = _tau_ff[cheetah::num_leg_joint * leg + jidx];
+        // cmd[leg].qDes[jidx] = _des_jpos[cheetah::num_leg_joint * leg + jidx];
+        // cmd[leg].qdDes[jidx] = _des_jvel[cheetah::num_leg_joint * leg + jidx];
 
-      // cmd[leg].kpJoint(jidx, jidx) = _Kp_joint[jidx];
-      // cmd[leg].kdJoint(jidx, jidx) = _Kd_joint[jidx];
+        // cmd[leg].kpJoint(jidx, jidx) = _Kp_joint[jidx];
+        // cmd[leg].kdJoint(jidx, jidx) = _Kd_joint[jidx];
 
-      cmd[leg].tauFeedForwardBias[0] = data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[0];
-      cmd[leg].tauFeedForwardBias[1] = data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[1];
-      cmd[leg].tauFeedForwardBias[2] = data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[2];
-    }
+        cmd[leg].tauFeedForwardBias[0] = data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[0];
+        cmd[leg].tauFeedForwardBias[1] = data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[1];
+        cmd[leg].tauFeedForwardBias[2] = data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[2];
+      } else if(data._desiredStateCommand->rcCommand->mode == 23)
+      {
+        
+      }
+    } 
   }
 
 

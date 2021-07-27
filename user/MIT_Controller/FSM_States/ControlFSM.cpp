@@ -117,6 +117,8 @@ void ControlFSM<T>::runFSM() {
 
     } else if(rc_mode == RC_mode::QP_STAND_FRICTION_EST){
       data.controlParameters->control_mode = K_BALANCE_STAND_FRICTION_EST;
+    } else if(rc_mode == RC_mode::QP_STAND_FRICTION_EST_AUTO){
+      data.controlParameters->control_mode = K_BALANCE_STAND_FRICTION_EST_AUTO;
     }
       //data.controlParameters->control_mode = K_FRONTJUMP;
     //std::cout<< "control mode: "<<data.controlParameters->control_mode<<std::endl;
@@ -326,6 +328,12 @@ void ControlFSM<T>::printInfo(int opt) {
                   << "\n";
 
         std::cout<< "(Custom outputs2) Locomotion mode: "<< data._desiredStateCommand->rcCommand->variable[0]
+                  << "\n";
+
+        std::cout<< "(Custom outputs5) DEBUG: Bias of torques: "
+                  << data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[0] << ", "
+                  << data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[1]<< ", "
+                  << data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[2]
                   << "\n";
 
         // std::cout<< "(Custom outputs3) q: "<< data._stateEstimator._data.legControllerData[0].q

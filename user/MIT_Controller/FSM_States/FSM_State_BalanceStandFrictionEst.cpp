@@ -43,7 +43,11 @@ void FSM_State_BalanceStandFrictionEst<T>::onEnter() {
   // Always set the gait to be standing in this state
   this->_data->_gaitScheduler->gaitData._nextGait = GaitType::STAND;
   
-  _ini_body_pos = (this->_data->_stateEstimator->getResult()).position;
+  // Origin
+  // _ini_body_pos = (this->_data->_stateEstimator->getResult()).position;
+  // Bug fixed
+  // rpy is defined in world frame, but robot need rpy in body frame here
+  _ini_body_pos = (this->_data->_stateEstimator->getResult()).rBody * (this->_data->_stateEstimator->getResult()).position;
 
   if(_ini_body_pos[2] < 0.2) {
     _ini_body_pos[2] = 0.3;
@@ -146,6 +150,12 @@ FSM_StateName FSM_State_BalanceStandFrictionEst<T>::checkTransition() {
       this->transitionDuration = 0.0;
       break;
 
+    case K_BALANCE_STAND_FRICTION_EST_AUTO:
+      this->nextStateName = FSM_StateName::BALANCE_STAND_FRICTION_EST_AUTO;
+      // Transition time is immediate
+      this->transitionDuration = 0.0;
+      break;
+
     // case K_BACKFLIP:
     //   this->nextStateName = FSM_StateName::BACKFLIP;
     //   this->transitionDuration = 0.;
@@ -193,6 +203,10 @@ TransitionData<T> FSM_State_BalanceStandFrictionEst<T>::transition() {
       break;
 
     case FSM_StateName::RECOVERY_STAND:
+      this->transitionData.done = true;
+      break;
+
+    case FSM_StateName::BALANCE_STAND_FRICTION_EST_AUTO:
       this->transitionData.done = true;
       break;
 

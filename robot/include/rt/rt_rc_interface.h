@@ -16,6 +16,9 @@ class rc_control_settings {
     double     variable[3];
 
     double     tauFeedForwardBias_des[3];
+    double     tauFeedForwardBiasCounter_des[3];
+
+    void zeroRCcontrol();
 };
 
 
@@ -34,6 +37,7 @@ namespace RC_mode{
 
   // Custom
   constexpr int QP_STAND_FRICTION_EST = 22;
+  constexpr int QP_STAND_FRICTION_EST_AUTO = 23;
 };
 
 void sbus_packet_complete();

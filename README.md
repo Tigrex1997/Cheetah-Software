@@ -75,27 +75,23 @@ To use Ipopt, use CMake Ipopt option. Ex) cmake -DIPOPT_OPTION=ON ..
 ## Instructions with Ubuntu2004 (Use 'hotfix-Ubuntu2004' branch codes)
 ### Build (Compile)
 1. Ubuntu2004 (If VMWare, allocate 4 CPUs, 8G memory (when 4G memory, compilation error), hard disk space 40G);
-2. Download (Link: https://download.qt.io/new_archive/qt/) and install qt5, the installation path MUST be set to `/home/{username}/Qt` because when the source code is compiled, the default path of qt is coded as this:\
-(1)\
-Open a terminal and give authority to the file:\
-`sudo chmod -R 777 qt-opensource-linux-x64-5.xx.x.run`\
-(2)\
-Use terminal to start the installing process:\
-`./qt-opensource-linux-x64-5.xx.x.run`
+2. Download (Link: https://download.qt.io/new_archive/qt/) and install qt5, the installation path MUST be set to `/home/{username}/Qt` because when the source code is compiled, the default path of qt is coded as this:
+   1) Open a terminal and give authority to the file:\
+   `sudo chmod -R 777 qt-opensource-linux-x64-5.xx.x.run`
+   2) Use terminal to start the installing process:\
+   `./qt-opensource-linux-x64-5.xx.x.run`
 3. Run the following command:\
 `sudo apt-get install build-essential autoconf automake autopoint libglib2.0-dev libtool openjdk-8-jdk python-dev`\
 Just make sure set JAVA usage as openjdk-8-jdk to avoid building failures (openjdk 1.8.0_292 & javac 1.8.0_292);
-4. Download (Link: https://github.com/lcm-proj/lcm/releases/tag/v1.3.1) and install LCM 1.3.1 with the following steps:\
-(1)\
-`unzip lcm-1.3.1.zip`\
-`cd lcm-1.3.1`\
-`./configure`\
-`make`\
-`sudo make install`\
-(2)\
-`export LCM_INSTALL_DIR=/usr/local/lib`\
-`sudo sh -c "echo $LCM_INSTALL_DIR > /etc/ld.so.conf.d/lcm.conf"`\
-`sudo ldconfig`
+4. Download (Link: https://github.com/lcm-proj/lcm/releases/tag/v1.3.1) and install LCM 1.3.1 with the following steps:
+   1) `unzip lcm-1.3.1.zip`\
+   `cd lcm-1.3.1`\
+   `./configure`\
+   `make`\
+   `sudo make install`
+   2) `export LCM_INSTALL_DIR=/usr/local/lib`\
+   `sudo sh -c "echo $LCM_INSTALL_DIR > /etc/ld.so.conf.d/lcm.conf"`\
+   `sudo ldconfig`
 5. Test if LCM 1.3.1 is successfully installed using:\
 `lcm-logplayer-gui`
 6. Install Eigen and set it as path used in the default code (otherwise need to change code):\
@@ -126,3 +122,19 @@ After starting the controller, the robot will stretch out 4 legs and stand up.
 ### Data Processing
 1. LCM Usage:\
 Use LCM (https://lcm-proj.github.io/) to connect the control interface to the actual mini cheetah hardware, and also as a debugging tool when running the simulator. The `make_types.sh` script runs an LCM tool to generate C++ header files for the LCM data types. When the simulator is running, you can run `scripts/launch_lcm_spy.sh` to open the LCM spy utility, which shows detailed information from the simulator and controller. You can click on data streams to plot them, which is nice for debugging. There is also a tool called lcm-logger which can save LCM data to a file.
+2. Convert LCM files to MAT files:
+   1) Follow the instructions in the README.md under `/scripts/lcm-log2smat` and install `lcm-log2smat` (Remember to install LCM and this using the same python version, otherwise errors may show up);
+   2) Build a folder named `LogData` under the `/scripts` folder, build the corresponding subfolders as you want and then put the `.lcm` files under the subfolders for further conversions;
+   3) Under the `/scripts` folder, open the terminal and use the command:\
+`bash log_convert.sh LogData/xxxxxx.xx LogData/Outputs/xxxxxx.mat`.
+
+### Solutions to errors
+1. Problem: `Cannot open /dev/ttyUSB0: Permission denied` in the simulation.\
+  Solution:
+    1) Open a terminal and run the following commands:\
+    `sudo su`\
+    `//type your password`\
+    `cd /`\
+    `cd dev`\
+    `chown username ttyUSB0`
+    2) Keep the terminal running when you are running the simulation.

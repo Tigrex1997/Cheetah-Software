@@ -8,6 +8,42 @@ static pthread_mutex_t lcm_get_set_mutex =
 PTHREAD_MUTEX_INITIALIZER; /**< mutex to protect gui settings coming over
                              LCM */
 
+
+void rc_control_settings::zeroRCcontrol()
+{
+  // mode = 0;
+  for(int i = 0; i < 2; i++)
+  {
+    p_des[i] = 0; // (x, y) -1 ~ 1
+  }
+  height_variation = 0; // -1 ~ 1
+  for(int i = 0; i < 3; i++)
+  {
+    v_des[i] = 0; // -1 ~ 1 * (scale 0.5 ~ 1.5)
+  }
+  for(int i = 0; i < 3; i++)
+  {
+    rpy_des[i] = 0; // -1 ~ 1
+  }
+  for(int i = 0; i < 3; i++)
+  {
+    omega_des[i] = 0; // -1 ~ 1
+  }
+  // for(int i = 0; i < 3; i++)
+  // {
+  //   variable[i] = 0;
+  // }
+
+  for(int i = 0; i < 3; i++)
+  {
+    tauFeedForwardBias_des[i] = 0;
+  }
+  // for(int i = 0; i < 3; i++)
+  // {
+  //   tauFeedForwardBiasCounter_des[i] = 0;
+  // }
+}
+
 // Controller Settings
 rc_control_settings rc_control;
 
@@ -34,6 +70,9 @@ TaranisSwitchState initial_mode_go_switch = SWITCH_DOWN;
 void sbus_packet_complete() {
   Taranis_X7_data data;
   update_taranis_x7(&data);
+
+  // Custom (Set RC input as 0s every iteration)
+  rc_control.zeroRCcontrol();
 
   float v_scale = data.knobs[0]*1.5f + 2.0f; // from 0.5 to 3.5
   float w_scale = 2.*v_scale; // from 1.0 to 7.0
@@ -92,7 +131,14 @@ void sbus_packet_complete() {
         */
 
         // Custom
-        selected_mode = RC_mode::QP_STAND_FRICTION_EST;
+        if (mode_go_switch == SWITCH_UP)
+        {
+          selected_mode = RC_mode::QP_STAND_FRICTION_EST;
+        }
+        else if(mode_go_switch == SWITCH_MIDDLE)
+        {
+          selected_mode = RC_mode::QP_STAND_FRICTION_EST_AUTO;
+        }
       } // Experiment Mode
       else if(mode_selection_switch == SWITCH_DOWN){
         int mode_id = left_select * 3 + right_select;
@@ -206,6 +252,35 @@ void sbus_packet_complete() {
     rc_control.tauFeedForwardBias_des[0] = data.left_stick[0];
     rc_control.tauFeedForwardBias_des[1] = data.right_stick[0];
     rc_control.tauFeedForwardBias_des[2] = data.right_stick[1];
+  } else if(selected_mode == RC_mode::QP_STAND_FRICTION_EST_AUTO) {
+    //rc_control.rpy_des[0] = data.left_stick[0] * 1.4;
+    //rc_control.rpy_des[1] = data.right_stick[1] * 0.46;
+    
+    // Origin
+    /*
+    rc_control.rpy_des[0] = data.left_stick[0];
+    rc_control.rpy_des[1] = data.right_stick[1];
+    rc_control.rpy_des[2] = data.right_stick[0];
+
+    rc_control.height_variation = data.left_stick[1];
+    */
+
+    rc_control.omega_des[0] = 0;
+    rc_control.omega_des[1] = 0;
+    rc_control.omega_des[2] = 0;
+    //rc_control.p_des[1] = -0.667 * rc_control.rpy_des[0];
+    //rc_control.p_des[2] = data.left_stick[1] * .12;
+
+    // Custom
+    rc_control.rpy_des[0] = 0;
+    rc_control.rpy_des[1] = 0;
+    rc_control.rpy_des[2] = 0;
+
+    rc_control.height_variation = 0;
+
+    // rc_control.tauFeedForwardBias_des[0] = data.left_stick[0];
+    // rc_control.tauFeedForwardBias_des[1] = data.right_stick[0];
+    // rc_control.tauFeedForwardBias_des[2] = data.right_stick[1];
   }
   break;
 }
