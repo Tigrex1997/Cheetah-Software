@@ -55,6 +55,7 @@ ControlFSM<T>::ControlFSM(Quadruped<T>* _quadruped,
   // Custom
   statesList.balanceStandFrictionEst = new FSM_State_BalanceStandFrictionEst<T>(&data);
   statesList.balanceStandFrictionEstAuto = new FSM_State_BalanceStandFrictionEstAuto<T>(&data);
+  statesList.balanceStandGRFCalib = new FSM_State_BalanceStandGRFCalib<T>(&data);
 
   safetyChecker = new SafetyChecker<T>(&data);
 
@@ -120,6 +121,8 @@ void ControlFSM<T>::runFSM() {
       data.controlParameters->control_mode = K_BALANCE_STAND_FRICTION_EST;
     } else if(rc_mode == RC_mode::QP_STAND_FRICTION_EST_AUTO){
       data.controlParameters->control_mode = K_BALANCE_STAND_FRICTION_EST_AUTO;
+    } else if(rc_mode == RC_mode::QP_STAND_GRF_CALIB){
+      data.controlParameters->control_mode = K_BALANCE_STAND_GRF_CALIB;
     }
       //data.controlParameters->control_mode = K_FRONTJUMP;
     //std::cout<< "control mode: "<<data.controlParameters->control_mode<<std::endl;
@@ -286,6 +289,9 @@ FSM_State<T>* ControlFSM<T>::getNextState(FSM_StateName stateName) {
     
     case FSM_StateName::BALANCE_STAND_FRICTION_EST_AUTO:
       return statesList.balanceStandFrictionEstAuto;
+
+    case FSM_StateName::BALANCE_STAND_GRF_CALIB:
+      return statesList.balanceStandGRFCalib;
 
     default:
       return statesList.invalid;

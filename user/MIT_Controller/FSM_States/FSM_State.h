@@ -29,6 +29,7 @@
 // Custom
 #define K_BALANCE_STAND_FRICTION_EST 22
 #define K_BALANCE_STAND_FRICTION_EST_AUTO 23
+#define K_BALANCE_STAND_GRF_CALIB 24
 
 /**
  * Enumerate all of the FSM states so we can keep track of them.
@@ -47,7 +48,8 @@ enum class FSM_StateName {
   FRONTJUMP,
   // Custom
   BALANCE_STAND_FRICTION_EST,
-  BALANCE_STAND_FRICTION_EST_AUTO
+  BALANCE_STAND_FRICTION_EST_AUTO,
+  BALANCE_STAND_GRF_CALIB
 };
 
 /**

@@ -146,19 +146,23 @@ void sbus_packet_complete() {
         }
       } // Experiment Mode
       else if(mode_selection_switch == SWITCH_DOWN){
-        int mode_id = left_select * 3 + right_select;
+        // Origin
+        // int mode_id = left_select * 3 + right_select;
 
-        if(mode_id == 0){ // Two leg stance
-          selected_mode = RC_mode::TWO_LEG_STANCE_PRE;
-          if(mode_go_switch == SWITCH_DOWN && initial_mode_go_switch != SWITCH_DOWN) {
-            selected_mode = RC_mode::TWO_LEG_STANCE;
-          } else if(mode_go_switch == SWITCH_UP) {
-            initial_mode_go_switch = SWITCH_UP;
-          }
-        }
-        else if(mode_id == 1){ // Vision 
-          selected_mode = RC_mode::VISION;
-        }
+        // if(mode_id == 0){ // Two leg stance
+        //   selected_mode = RC_mode::TWO_LEG_STANCE_PRE;
+        //   if(mode_go_switch == SWITCH_DOWN && initial_mode_go_switch != SWITCH_DOWN) {
+        //     selected_mode = RC_mode::TWO_LEG_STANCE;
+        //   } else if(mode_go_switch == SWITCH_UP) {
+        //     initial_mode_go_switch = SWITCH_UP;
+        //   }
+        // }
+        // else if(mode_id == 1){ // Vision 
+        //   selected_mode = RC_mode::VISION;
+        // }
+
+        //Custom for vertical GRF calibration
+        selected_mode = RC_mode::QP_STAND_GRF_CALIB;
       }
 
       // gait selection
@@ -340,6 +344,43 @@ void sbus_packet_complete() {
         rc_control.bias_counter = 0;
         rc_control.flag_auto_bias_limit_reached = 1;
       }
+    }
+  } else if (selected_mode == RC_mode::QP_STAND_GRF_CALIB){
+    //rc_control.rpy_des[0] = data.left_stick[0] * 1.4;
+    //rc_control.rpy_des[1] = data.right_stick[1] * 0.46;
+    double temp_static_roll = data.knobs[0];
+    double temp_static_pitch = data.knobs[1];
+    //printf("(Custom outputs13) DEBUG: Knobs0, 1: %f, %f.\n", data.knobs[0], data.knobs[1]);
+    double temp_static_yaw = 0;
+    if(mode_go_switch == SWITCH_UP)
+    {
+      temp_static_yaw = 0;
+    } else if(mode_go_switch == SWITCH_DOWN)
+    {
+      temp_static_yaw = -0.6;
+    }
+    
+    // Origin
+    rc_control.rpy_des[0] = temp_static_roll;
+    rc_control.rpy_des[1] = temp_static_pitch;
+    rc_control.rpy_des[2] = temp_static_yaw;
+
+    rc_control.height_variation = data.left_stick[1];
+    
+
+    rc_control.omega_des[0] = 0;
+    rc_control.omega_des[1] = 0;
+    rc_control.omega_des[2] = 0;
+    //rc_control.p_des[1] = -0.667 * rc_control.rpy_des[0];
+    //rc_control.p_des[2] = data.left_stick[1] * .12;
+
+    // Safety
+    if(rc_control.rpy_des[0] < -0.4)
+    {
+      rc_control.rpy_des[0] = -0.4;
+    } else if(rc_control.rpy_des[0] > 0.4)
+    {
+      rc_control.rpy_des[0] = 0.4;
     }
   }
   break;

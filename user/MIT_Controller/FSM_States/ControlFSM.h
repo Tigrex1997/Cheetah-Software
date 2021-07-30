@@ -24,6 +24,7 @@
 // Custom
 #include "../FSM_States/FSM_State_BalanceStandFrictionEst.h"
 #include "../FSM_States/FSM_State_BalanceStandFrictionEstAuto.h"
+#include "../FSM_States/FSM_State_BalanceStandGRFCalib.h"
 
 /**
  * Enumerate all of the operating modes
@@ -51,6 +52,7 @@ struct FSM_StatesList {
   // Custom
   FSM_State_BalanceStandFrictionEst<T>* balanceStandFrictionEst;
   FSM_State_BalanceStandFrictionEstAuto<T>* balanceStandFrictionEstAuto;
+  FSM_State_BalanceStandGRFCalib<T>* balanceStandGRFCalib;
 };
 
 

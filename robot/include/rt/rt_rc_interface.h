@@ -49,6 +49,7 @@ namespace RC_mode{
   // Custom
   constexpr int QP_STAND_FRICTION_EST = 22;
   constexpr int QP_STAND_FRICTION_EST_AUTO = 23;
+  constexpr int QP_STAND_GRF_CALIB = 24;
 };
 
 void sbus_packet_complete();

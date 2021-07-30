@@ -1,10 +1,10 @@
-/*=========================== Balance Stand for friction estimation (Custom) ===========================*/
+/*=========================== Balance Stand GRF Calibration ===========================*/
 /**
  * FSM State that forces all legs to be on the ground and uses the QP
- * Balance controller (FrictionEst) for instantaneous balance control.
+ * Balance controller for instantaneous balance control and settings for GRF calibration.
  */
 
-#include "FSM_State_BalanceStandFrictionEst.h"
+#include "FSM_State_BalanceStandGRFCalib.h"
 #include <Controllers/WBC_Ctrl/LocomotionCtrl/LocomotionCtrl.hpp>
 
 /**
@@ -14,9 +14,9 @@
  * @param _controlFSMData holds all of the relevant control data
  */
 template <typename T>
-FSM_State_BalanceStandFrictionEst<T>::FSM_State_BalanceStandFrictionEst(
+FSM_State_BalanceStandGRFCalib<T>::FSM_State_BalanceStandGRFCalib(
     ControlFSMData<T>* _controlFSMData)
-    : FSM_State<T>(_controlFSMData, FSM_StateName::BALANCE_STAND_FRICTION_EST,"BALANCE_STAND_FRICTION_EST") {
+    : FSM_State<T>(_controlFSMData, FSM_StateName::BALANCE_STAND_GRF_CALIB,"BALANCE_STAND_GRF_CALIB") {
   // Set the pre controls safety checks
   this->turnOnAllSafetyChecks();
   // Turn off Foot pos command since it is set in WBC as operational task
@@ -33,7 +33,7 @@ FSM_State_BalanceStandFrictionEst<T>::FSM_State_BalanceStandFrictionEst(
 }
 
 template <typename T>
-void FSM_State_BalanceStandFrictionEst<T>::onEnter() {
+void FSM_State_BalanceStandGRFCalib<T>::onEnter() {
   // Default is to not transition
   this->nextStateName = this->stateName;
 
@@ -63,11 +63,11 @@ void FSM_State_BalanceStandFrictionEst<T>::onEnter() {
  * Calls the functions to be executed on each control loop iteration.
  */
 template <typename T>
-void FSM_State_BalanceStandFrictionEst<T>::run() {
+void FSM_State_BalanceStandGRFCalib<T>::run() {
   Vec4<T> contactState;
   contactState<< 0.5, 0.5, 0.5, 0.5;
   this->_data->_stateEstimator->setContactPhase(contactState);
-  BalanceStandFrictionEstStep();
+  BalanceStandGRFCalibStep();
 }
 
 /**
@@ -77,13 +77,13 @@ void FSM_State_BalanceStandFrictionEst<T>::run() {
  * @return the enumerated FSM state name to transition into
  */
 template <typename T>
-FSM_StateName FSM_State_BalanceStandFrictionEst<T>::checkTransition() {
+FSM_StateName FSM_State_BalanceStandGRFCalib<T>::checkTransition() {
   // Get the next state
   _iter++;
 
   // Switch FSM control mode
   switch ((int)this->_data->controlParameters->control_mode) {
-    case K_BALANCE_STAND_FRICTION_EST:
+    case K_BALANCE_STAND_GRF_CALIB:
       // Normal operation for state based transitions
 
       // Need a working state estimator for this
@@ -109,15 +109,6 @@ FSM_StateName FSM_State_BalanceStandFrictionEst<T>::checkTransition() {
                               // main_control_settings
         _iter = 0;
       }*/
-      break;
-
-    case K_BALANCE_STAND:
-      // Requested change to BALANCE_STAND
-      this->nextStateName = FSM_StateName::BALANCE_STAND;
-
-      // Transition time is immediate
-      this->transitionDuration = 0.0;
-
       break;
 
     // case K_LOCOMOTION:
@@ -150,26 +141,22 @@ FSM_StateName FSM_State_BalanceStandFrictionEst<T>::checkTransition() {
       this->transitionDuration = 0.0;
       break;
 
-    case K_BALANCE_STAND_FRICTION_EST_AUTO:
-      this->nextStateName = FSM_StateName::BALANCE_STAND_FRICTION_EST_AUTO;
-      // Transition time is immediate
-      this->transitionDuration = 0.0;
-      break;
-
-    case K_BALANCE_STAND_GRF_CALIB:
-      this->nextStateName = FSM_StateName::BALANCE_STAND_GRF_CALIB;
-      // Transition time is immediate
-      this->transitionDuration = 0.0;
-      break;
-
     // case K_BACKFLIP:
     //   this->nextStateName = FSM_StateName::BACKFLIP;
     //   this->transitionDuration = 0.;
     //   break;
 
+    // Custom
+    // case K_BALANCE_STAND_FRICTION_EST:
+    //   // Requested change to BALANCE_STAND_FRICTION_EST
+    //   this->nextStateName = FSM_StateName::BALANCE_STAND_FRICTION_EST;
+    //   // Transition time is immediate
+    //   this->transitionDuration = 0.0;
+    //   break;
+
     default:
       std::cout << "[CONTROL FSM] Bad Request: Cannot transition from "
-                << K_BALANCE_STAND_FRICTION_EST << " to "
+                << K_BALANCE_STAND_GRF_CALIB << " to "
                 << this->_data->controlParameters->control_mode << std::endl;
   }
 
@@ -184,11 +171,11 @@ FSM_StateName FSM_State_BalanceStandFrictionEst<T>::checkTransition() {
  * @return true if transition is complete
  */
 template <typename T>
-TransitionData<T> FSM_State_BalanceStandFrictionEst<T>::transition() {
+TransitionData<T> FSM_State_BalanceStandGRFCalib<T>::transition() {
   // Switch FSM control mode
   switch (this->nextStateName) {
     // case FSM_StateName::LOCOMOTION:
-    //   BalanceStandFrictionEstStep();
+    //   BalanceStandStep();
 
     //   _iter++;
     //   if (_iter >= this->transitionDuration * 1000) {
@@ -199,10 +186,6 @@ TransitionData<T> FSM_State_BalanceStandFrictionEst<T>::transition() {
 
     //   break;
 
-    case FSM_StateName::BALANCE_STAND:
-      this->transitionData.done = true;
-      break;
-
     case FSM_StateName::PASSIVE:
       this->turnOffAllSafetyChecks();
       this->transitionData.done = true;
@@ -212,19 +195,16 @@ TransitionData<T> FSM_State_BalanceStandFrictionEst<T>::transition() {
       this->transitionData.done = true;
       break;
 
-    case FSM_StateName::BALANCE_STAND_FRICTION_EST_AUTO:
-      this->transitionData.done = true;
-      break;
-
-    case FSM_StateName::BALANCE_STAND_GRF_CALIB:
-      this->transitionData.done = true;
-      break;
-
     // case FSM_StateName::BACKFLIP:
     //   this->transitionData.done = true;
     //   break;
 
     // case FSM_StateName::VISION:
+    //   this->transitionData.done = true;
+    //   break;
+
+    // Custom
+    // case FSM_StateName::BALANCE_STAND_FRICTION_EST:
     //   this->transitionData.done = true;
     //   break;
 
@@ -241,7 +221,7 @@ TransitionData<T> FSM_State_BalanceStandFrictionEst<T>::transition() {
  * Cleans up the state information on exiting the state.
  */
 template <typename T>
-void FSM_State_BalanceStandFrictionEst<T>::onExit() {
+void FSM_State_BalanceStandGRFCalib<T>::onExit() {
   _iter = 0;
 }
 
@@ -249,7 +229,7 @@ void FSM_State_BalanceStandFrictionEst<T>::onExit() {
  * Calculate the commands for the leg controllers for each of the feet.
  */
 template <typename T>
-void FSM_State_BalanceStandFrictionEst<T>::BalanceStandFrictionEstStep() {
+void FSM_State_BalanceStandGRFCalib<T>::BalanceStandGRFCalibStep() {
 
   _wbc_data->pBody_des = _ini_body_pos;
   _wbc_data->vBody_des.setZero();
@@ -302,4 +282,4 @@ void FSM_State_BalanceStandFrictionEst<T>::BalanceStandFrictionEstStep() {
 }
 
 // template class FSM_State_BalanceStand<double>;
-template class FSM_State_BalanceStandFrictionEst<float>;
+template class FSM_State_BalanceStandGRFCalib<float>;
