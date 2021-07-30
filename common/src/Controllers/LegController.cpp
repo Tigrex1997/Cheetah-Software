@@ -220,9 +220,9 @@ void LegController<T>::updateCommand(SpiCommand* spiCommand) {
       }
 
       // set command:
-      spiCommand->tau_abad_ff[leg] += commands[leg].tauFeedForwardBias(0)*5;
-      spiCommand->tau_hip_ff[leg] += commands[leg].tauFeedForwardBias(1)*5;
-      spiCommand->tau_knee_ff[leg] += commands[leg].tauFeedForwardBias(2)*5;
+      spiCommand->tau_abad_ff[leg] += commands[leg].tauFeedForwardBias(0);
+      spiCommand->tau_hip_ff[leg] += commands[leg].tauFeedForwardBias(1);
+      spiCommand->tau_knee_ff[leg] += commands[leg].tauFeedForwardBias(2);
 
       // joint space pd
       // joint space PD

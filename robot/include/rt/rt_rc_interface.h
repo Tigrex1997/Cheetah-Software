@@ -19,6 +19,17 @@ class rc_control_settings {
     double     tauFeedForwardBiasCounter_des[3];
 
     void zeroRCcontrol();
+    // // Accumulator for the counter
+    // void addAutoBias();
+    // void zeroAutoBias();
+  
+    // Auto bias counter
+    int bias_counter = 0;  // 1s-100 in simulation time
+    int flag_auto_bias_limit_reached = 0;
+
+    // (Params) Auto gain and limits preset
+    double gain_time = 0.00667;  // 1s in SIM can reach 100, then make it 15s to 10N
+    double auto_bias_limit = 15;  // Set joint torque limits as 15N
 };
 
 

@@ -346,6 +346,18 @@ void Simulation::step(double dt, double dtLowLevelControl,
             _simulator->getState().qd[leg * 3 + joint]);
       }
     }
+
+    // Custom
+    // std::cout<< "(Custom outputs7) DEBUG: Actual commanded torque in Sim: "
+    //               << _tau[0]<< ", "
+    //               << _tau[1]<< ", "
+    //               << _tau[2]
+    //               << "\n";
+    // std::cout<< "(Custom outputs8) DEBUG: Computed torque in Sim: "
+    //               << _spineBoards[0].torque_out[0]<< ", "
+    //               << _spineBoards[0].torque_out[1]<< ", "
+    //               << _spineBoards[0].torque_out[2]
+    //               << "\n";
   } else if (_robot == RobotType::CHEETAH_3) {
     for (int leg = 0; leg < 4; leg++) {
       for (int joint = 0; joint < 3; joint++) {

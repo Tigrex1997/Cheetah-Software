@@ -81,6 +81,11 @@ void sbus_packet_complete() {
   auto estop_switch = data.right_lower_right_switch;
   auto mode_selection_switch = data.left_lower_left_switch;
   auto mode_go_switch = data.left_upper_switch;
+  // Custom
+  // printf("(Custom outputs9) DEBUG: Value of mode_go_switch: %d\n", mode_go_switch);
+  // std::cout<< "(Custom outputs9) DEBUG: Actual commanded torque in Sim: "
+  //                 << mode_go_switch
+  //                 << "\n";
 
   auto left_select = data.left_lower_right_switch;
   auto right_select = data.right_lower_left_switch;
@@ -135,7 +140,7 @@ void sbus_packet_complete() {
         {
           selected_mode = RC_mode::QP_STAND_FRICTION_EST;
         }
-        else if(mode_go_switch == SWITCH_MIDDLE)
+        else if(mode_go_switch == SWITCH_DOWN)
         {
           selected_mode = RC_mode::QP_STAND_FRICTION_EST_AUTO;
         }
@@ -175,6 +180,17 @@ void sbus_packet_complete() {
   for(int i(0); i<2; ++i){
     data.left_stick[i] = deadband(data.left_stick[i], 0.1, -1., 1.);
     data.right_stick[i] = deadband(data.right_stick[i], 0.1, -1., 1.);
+  }
+
+  // Custom: Clear auto bias if NOT in QP_STAND_FRICTION_EST_AUTO mode
+  // to enable the auto mode to start from 0s
+  if(selected_mode != RC_mode::QP_STAND_FRICTION_EST_AUTO)
+  {
+    rc_control.tauFeedForwardBiasCounter_des[0] = 0;
+    rc_control.tauFeedForwardBiasCounter_des[1] = 0;
+    rc_control.tauFeedForwardBiasCounter_des[2] = 0;
+    rc_control.bias_counter = 0;
+    rc_control.flag_auto_bias_limit_reached = 0;
   }
 
   if(selected_mode == RC_mode::LOCOMOTION 
@@ -249,9 +265,13 @@ void sbus_packet_complete() {
 
     rc_control.height_variation = 0;
 
-    rc_control.tauFeedForwardBias_des[0] = data.left_stick[0];
-    rc_control.tauFeedForwardBias_des[1] = data.right_stick[0];
-    rc_control.tauFeedForwardBias_des[2] = data.right_stick[1];
+    //????????
+    // double manual_adjustment_gain = data.knobs[1];
+    // printf("(Custom outputs10) DEBUG: Value of the left knob: %f\n", data.knobs[0]);
+
+    rc_control.tauFeedForwardBias_des[0] = data.left_stick[0]*10;
+    rc_control.tauFeedForwardBias_des[1] = data.right_stick[0]*10;
+    rc_control.tauFeedForwardBias_des[2] = data.right_stick[1]*10;
   } else if(selected_mode == RC_mode::QP_STAND_FRICTION_EST_AUTO) {
     //rc_control.rpy_des[0] = data.left_stick[0] * 1.4;
     //rc_control.rpy_des[1] = data.right_stick[1] * 0.46;
@@ -281,6 +301,46 @@ void sbus_packet_complete() {
     // rc_control.tauFeedForwardBias_des[0] = data.left_stick[0];
     // rc_control.tauFeedForwardBias_des[1] = data.right_stick[0];
     // rc_control.tauFeedForwardBias_des[2] = data.right_stick[1];
+
+    if(rc_control.flag_auto_bias_limit_reached == 0)
+    {
+      rc_control.bias_counter = rc_control.bias_counter + 1;
+    } else if(rc_control.flag_auto_bias_limit_reached == 1)
+    {
+      rc_control.bias_counter = 0;  // Prevent limit reached but counter still growing
+    }
+    // printf("(Custom outputs11) DEBUG: bias_counter: %d\n", rc_control.bias_counter);  // Should change under 10000 (10N)
+
+    // Adding joint biases (?????? Consider 0 if joint changes)
+    // if(???? == SWITCH_UP)
+    // {
+    if(rc_control.flag_auto_bias_limit_reached == 0)
+    {
+      rc_control.tauFeedForwardBiasCounter_des[0] = rc_control.bias_counter*rc_control.gain_time;
+    } else if(rc_control.flag_auto_bias_limit_reached == 1)  // Safety limit reached
+    {
+      rc_control.tauFeedForwardBiasCounter_des[0] = rc_control.auto_bias_limit;
+    }
+    // printf("(Custom outputs12) DEBUG: tauFeedForwardBiasCounter_des[0]: %f\n", rc_control.tauFeedForwardBiasCounter_des[0]);
+    
+    // } else if(mode_auto_friction_switch == SWITCH_MIDDLE)
+    // {
+    //   rc_control.tauFeedForwardBiasCounter_des[1]++;
+    // } else if(mode_auto_friction_switch == SWITCH_DOWN)
+    // {
+    //   rc_control.tauFeedForwardBiasCounter_des[2]++;
+    // }
+
+    // Safety (15N limit)
+    for(int temp_i = 0; temp_i < 3; temp_i++)
+    {
+      if(rc_control.tauFeedForwardBiasCounter_des[temp_i] > rc_control.auto_bias_limit)
+      {
+        rc_control.tauFeedForwardBiasCounter_des[temp_i] = rc_control.auto_bias_limit;
+        rc_control.bias_counter = 0;
+        rc_control.flag_auto_bias_limit_reached = 1;
+      }
+    }
   }
   break;
 }

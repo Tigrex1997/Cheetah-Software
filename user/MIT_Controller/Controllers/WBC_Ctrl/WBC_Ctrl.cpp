@@ -147,7 +147,9 @@ void WBC_Ctrl<T>::_UpdateLegCMD(ControlFSMData<T> & data){
         cmd[leg].tauFeedForwardBias[2] = data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[2];
       } else if(data._desiredStateCommand->rcCommand->mode == 23)
       {
-        
+        cmd[leg].tauFeedForwardBias[0] = data._desiredStateCommand->rcCommand->tauFeedForwardBiasCounter_des[0];
+        cmd[leg].tauFeedForwardBias[1] = data._desiredStateCommand->rcCommand->tauFeedForwardBiasCounter_des[1];
+        cmd[leg].tauFeedForwardBias[2] = data._desiredStateCommand->rcCommand->tauFeedForwardBiasCounter_des[2];
       }
     } 
   }

@@ -54,6 +54,7 @@ ControlFSM<T>::ControlFSM(Quadruped<T>* _quadruped,
   statesList.frontJump = new FSM_State_FrontJump<T>(&data);
   // Custom
   statesList.balanceStandFrictionEst = new FSM_State_BalanceStandFrictionEst<T>(&data);
+  statesList.balanceStandFrictionEstAuto = new FSM_State_BalanceStandFrictionEstAuto<T>(&data);
 
   safetyChecker = new SafetyChecker<T>(&data);
 
@@ -282,6 +283,9 @@ FSM_State<T>* ControlFSM<T>::getNextState(FSM_StateName stateName) {
 
     case FSM_StateName::BALANCE_STAND_FRICTION_EST:
       return statesList.balanceStandFrictionEst;
+    
+    case FSM_StateName::BALANCE_STAND_FRICTION_EST_AUTO:
+      return statesList.balanceStandFrictionEstAuto;
 
     default:
       return statesList.invalid;
@@ -331,9 +335,15 @@ void ControlFSM<T>::printInfo(int opt) {
                   << "\n";
 
         std::cout<< "(Custom outputs5) DEBUG: Bias of torques: "
-                  << data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[0] << ", "
+                  << data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[0]<< ", "
                   << data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[1]<< ", "
                   << data._desiredStateCommand->rcCommand->tauFeedForwardBias_des[2]
+                  << "\n";
+        
+        std::cout<< "(Custom outputs6) DEBUG: Auto bias of torques: "
+                  << data._desiredStateCommand->rcCommand->tauFeedForwardBiasCounter_des[0]<< ", "
+                  << data._desiredStateCommand->rcCommand->tauFeedForwardBiasCounter_des[1]<< ", "
+                  << data._desiredStateCommand->rcCommand->tauFeedForwardBiasCounter_des[2]
                   << "\n";
 
         // std::cout<< "(Custom outputs3) q: "<< data._stateEstimator._data.legControllerData[0].q

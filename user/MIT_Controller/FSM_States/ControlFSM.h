@@ -23,6 +23,7 @@
 #include "../FSM_States/FSM_State_FrontJump.h"
 // Custom
 #include "../FSM_States/FSM_State_BalanceStandFrictionEst.h"
+#include "../FSM_States/FSM_State_BalanceStandFrictionEstAuto.h"
 
 /**
  * Enumerate all of the operating modes
@@ -49,6 +50,7 @@ struct FSM_StatesList {
 
   // Custom
   FSM_State_BalanceStandFrictionEst<T>* balanceStandFrictionEst;
+  FSM_State_BalanceStandFrictionEstAuto<T>* balanceStandFrictionEstAuto;
 };
 
 
