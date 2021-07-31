@@ -106,6 +106,15 @@ void WBC_Ctrl<T>::_UpdateLegCMD(ControlFSMData<T> & data){
 
   for (size_t leg(0); leg < cheetah::num_leg; ++leg) {
     cmd[leg].zero();
+    // Custom
+    if(data._desiredStateCommand->rcCommand->mode != 23)
+    {
+      if(leg == 0)
+      {
+        cmd[leg].flag_hardcode_torque = 0;
+      }
+    }
+
     for (size_t jidx(0); jidx < cheetah::num_leg_joint; ++jidx) {
       cmd[leg].tauFeedForward[jidx] = _tau_ff[cheetah::num_leg_joint * leg + jidx];
       cmd[leg].qDes[jidx] = _des_jpos[cheetah::num_leg_joint * leg + jidx];
@@ -150,6 +159,12 @@ void WBC_Ctrl<T>::_UpdateLegCMD(ControlFSMData<T> & data){
         cmd[leg].tauFeedForwardBias[0] = data._desiredStateCommand->rcCommand->tauFeedForwardBiasCounter_des[0];
         cmd[leg].tauFeedForwardBias[1] = data._desiredStateCommand->rcCommand->tauFeedForwardBiasCounter_des[1];
         cmd[leg].tauFeedForwardBias[2] = data._desiredStateCommand->rcCommand->tauFeedForwardBiasCounter_des[2];
+
+        // Set hardcode torque flag
+        if(leg == 0)
+        {
+          cmd[leg].flag_hardcode_torque = 1;
+        }
       }
     } 
   }

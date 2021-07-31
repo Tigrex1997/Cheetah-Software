@@ -34,6 +34,10 @@ struct LegControllerCommand {
 
   Vec3<T> tauFeedForwardBias;
   Mat3<T> kpJointBias, kdJointBias;
+  //Vec3<T> tauCompleteHardCode;
+
+  // Temp flag for hardcode torque output (Need swap later)
+  int flag_hardcode_torque = 0;
 };
 
 /*!

@@ -29,6 +29,7 @@ void LegControllerCommand<T>::zero() {
   tauFeedForwardBias = Vec3<T>::Zero();
   kpJointBias = Mat3<T>::Zero();
   kdJointBias = Mat3<T>::Zero();
+  //tauCompleteHardCode = Vec3<T>::Zero();
 }
 
 /*!
@@ -149,6 +150,63 @@ void LegController<T>::updateCommand(SpiCommand* spiCommand) {
     // Torque
     legTorque += datas[leg].J.transpose() * footForce;
 
+    // Custom2
+    if (leg == 0)
+    {
+      // Safety code temp
+      if ((datas[leg].q(0) > 0.4) || (datas[leg].q(0) < -0.4))
+      {
+        commands[leg].tauFeedForwardBias(0) = 0;
+      }
+      if ((datas[leg].q(1) > -0.5) || (datas[leg].q(1) < -1.1))
+      {
+        commands[leg].tauFeedForwardBias(1) = 0;
+      }
+      if ((datas[leg].q(2) > 1.93) || (datas[leg].q(2) < 1.33))
+      {
+        commands[leg].tauFeedForwardBias(2) = 0;
+      }
+
+      if(commands[leg].flag_hardcode_torque == 0)
+      {
+        // Change legTorque:
+        legTorque(0) += commands[leg].tauFeedForwardBias(0);
+        legTorque(1) += commands[leg].tauFeedForwardBias(1);
+        legTorque(2) += commands[leg].tauFeedForwardBias(2);
+      } else if(commands[leg].flag_hardcode_torque == 1)
+      {
+        // Hardcode legTorque:
+        legTorque(0) += commands[leg].tauFeedForwardBias(0);
+        legTorque(1) = -0.015;
+        legTorque(2) = -3.159;
+
+        // Hardcode PD
+        commands[leg].kdJoint(0, 0) = 0;
+        commands[leg].kdJoint(1, 1) = 0;
+        commands[leg].kdJoint(2, 2) = 0;
+
+        commands[leg].kpJoint(0, 0) = 0;
+        commands[leg].kpJoint(1, 1) = 0;
+        commands[leg].kpJoint(2, 2) = 0;
+      }
+      
+      // joint space pd
+      // joint space PD
+      // spiCommand->kd_abad[leg] = 0;
+      // spiCommand->kd_hip[leg] = 0;
+      // spiCommand->kd_knee[leg] = 0;
+
+      // spiCommand->kp_abad[leg] = 0;
+      // spiCommand->kp_hip[leg] = 0;
+      // spiCommand->kp_knee[leg] = 0;
+
+      // Custom printing info
+      // std::cout<< "(Custom outputs4) q: "<< datas[leg].q
+      //           << "\n";
+      // std::cout<< "(Custom outputs14) DEBUG: tauEstimate: "<< datas[leg].tauEstimate
+      //           << "\n";  // 0.796523, -0.0149865, -3.15868
+    }
+
     // set command:
     spiCommand->tau_abad_ff[leg] = legTorque(0);
     spiCommand->tau_hip_ff[leg] = legTorque(1);
@@ -203,41 +261,44 @@ void LegController<T>::updateCommand(SpiCommand* spiCommand) {
     //   spiCommand->qd_des_knee[leg] = 0;
     // }
 
-    if (leg == 0)
-    {
-      // Safety code temp
-      if ((datas[leg].q(0) > 0.4) || (datas[leg].q(0) < -0.4))
-      {
-        commands[leg].tauFeedForwardBias(0) = 0;
-      }
-      if ((datas[leg].q(1) > -0.5) || (datas[leg].q(1) < -1.1))
-      {
-        commands[leg].tauFeedForwardBias(1) = 0;
-      }
-      if ((datas[leg].q(2) > 1.93) || (datas[leg].q(2) < 1.33))
-      {
-        commands[leg].tauFeedForwardBias(2) = 0;
-      }
+    // Abandoned because not recording changed torque, but just change outputs
+    // if (leg == 0)
+    // {
+    //   // Safety code temp
+    //   if ((datas[leg].q(0) > 0.4) || (datas[leg].q(0) < -0.4))
+    //   {
+    //     commands[leg].tauFeedForwardBias(0) = 0;
+    //   }
+    //   if ((datas[leg].q(1) > -0.5) || (datas[leg].q(1) < -1.1))
+    //   {
+    //     commands[leg].tauFeedForwardBias(1) = 0;
+    //   }
+    //   if ((datas[leg].q(2) > 1.93) || (datas[leg].q(2) < 1.33))
+    //   {
+    //     commands[leg].tauFeedForwardBias(2) = 0;
+    //   }
 
-      // set command:
-      spiCommand->tau_abad_ff[leg] += commands[leg].tauFeedForwardBias(0);
-      spiCommand->tau_hip_ff[leg] += commands[leg].tauFeedForwardBias(1);
-      spiCommand->tau_knee_ff[leg] += commands[leg].tauFeedForwardBias(2);
+    //   // set command:
+    //   spiCommand->tau_abad_ff[leg] += commands[leg].tauFeedForwardBias(0);
+    //   spiCommand->tau_hip_ff[leg] += commands[leg].tauFeedForwardBias(1);
+    //   spiCommand->tau_knee_ff[leg] += commands[leg].tauFeedForwardBias(2);
 
-      // joint space pd
-      // joint space PD
-      // spiCommand->kd_abad[leg] = 0;
-      // spiCommand->kd_hip[leg] = 0;
-      // spiCommand->kd_knee[leg] = 0;
+    //   // joint space pd
+    //   // joint space PD
+    //   // spiCommand->kd_abad[leg] = 0;
+    //   // spiCommand->kd_hip[leg] = 0;
+    //   // spiCommand->kd_knee[leg] = 0;
 
-      // spiCommand->kp_abad[leg] = 0;
-      // spiCommand->kp_hip[leg] = 0;
-      // spiCommand->kp_knee[leg] = 0;
+    //   // spiCommand->kp_abad[leg] = 0;
+    //   // spiCommand->kp_hip[leg] = 0;
+    //   // spiCommand->kp_knee[leg] = 0;
 
-      // Custom printing info
-      // std::cout<< "(Custom outputs4) q: "<< datas[leg].q
-      //           << "\n";
-    }
+    //   // Custom printing info
+    //   // std::cout<< "(Custom outputs4) q: "<< datas[leg].q
+    //   //           << "\n";
+    //   // std::cout<< "(Custom outputs14) DEBUG: tauEstimate: "<< datas[leg].tauEstimate
+    //   //           << "\n";  // 0.796523, -0.0149865, -3.15868
+    // }
   }
 }
 
