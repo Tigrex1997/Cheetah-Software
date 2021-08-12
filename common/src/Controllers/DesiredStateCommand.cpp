@@ -214,5 +214,32 @@ void DesiredStateCommand<T>::printStateCommandInfo() {
   }
 }
 
+/*  added for rc command logging */
+template<typename T>
+void DesiredStateCommand<T>::setLcm(rc_command_lcmt* lcmCommand) {
+  lcmCommand->mode = rcCommand->mode;
+  for(int i = 0; i < 2; i++)
+  {
+    lcmCommand->p_des[i] = rcCommand->p_des[i];
+  }
+  lcmCommand->height_variation = rcCommand->height_variation;
+  for(int i = 0; i < 3; i++)
+  {
+    lcmCommand->v_des[i] = rcCommand->v_des[i];
+  }
+  for(int i = 0; i < 3; i++)
+  {
+    lcmCommand->rpy_des[i] = rcCommand->rpy_des[i];
+  }
+  for(int i = 0; i < 3; i++)
+  {
+    lcmCommand->omega_des[i] = rcCommand->omega_des[i];
+  }
+  for(int i = 0; i < 3; i++)
+  {
+    lcmCommand->variable[i] = rcCommand->variable[i];
+  }
+}
+
 template class DesiredStateCommand<double>;
 template class DesiredStateCommand<float>;

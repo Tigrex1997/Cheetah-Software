@@ -78,6 +78,8 @@ class RobotRunner : public PeriodicTask {
   leg_control_data_lcmt leg_control_data_lcm;
   // Contact Estimator to calculate estimated forces and contacts
   contact_data_lcmt contact_data_lcm;
+  // rc command logging
+  rc_command_lcmt rc_command_lcm;
 
   FloatingBaseModel<float> _model;
   u64 _iterations = 0;
