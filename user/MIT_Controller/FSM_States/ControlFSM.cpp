@@ -354,6 +354,18 @@ void ControlFSM<T>::printInfo(int opt) {
 
         // std::cout<< "(Custom outputs3) q: "<< data._stateEstimator._data.legControllerData[0].q
         //           << "\n";
+
+        std::cout<< "(Custom outputs16) Tau_Est: "
+                  << data._legController->datas[0].tauEstimate[0]<< ", "
+                  << data._legController->datas[0].tauEstimate[1]<< ", "
+                  << data._legController->datas[0].tauEstimate[2]
+                  << "\n";
+
+        std::cout<< "(Custom outputs17) Tau_Est_MotorModel: "
+                  << data._legController->datas[0].tauEstimateFromActuatorModel[0]<< ", "
+                  << data._legController->datas[0].tauEstimateFromActuatorModel[1]<< ", "
+                  << data._legController->datas[0].tauEstimateFromActuatorModel[2]
+                  << "\n";
                   
         std::cout << std::endl;
 

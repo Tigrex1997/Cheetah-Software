@@ -18,6 +18,8 @@
 #include "Dynamics/Quadruped.h"
 #include "SimUtilities/SpineBoard.h"
 #include "SimUtilities/ti_boardcontrol.h"
+// Custom
+//#include "Dynamics/MiniCheetah.h"
 
 /*!
  * Data sent from the control algorithm to the legs.
@@ -60,6 +62,8 @@ struct LegControllerData {
   /*  added for detecting contact */
   Vec3<T> tauFeedback;
   Vec3<T> tauFeedforward;
+  /*  added for estimating tau_est more accurately (with Actuator Model) */
+  Vec3<T> tauEstimateFromActuatorModel;
 };
 
 /*!
@@ -83,6 +87,8 @@ class LegController {
 
   /*  added for contact estimation */
   void setLcm(contact_data_lcmt* data);
+  /* added for estimating tau_est more accurately (with Actuator Model) */
+  void getTauEstimateFromActuatorModel(SpiCommand* spiCommand, SpiData* spiData);
 
   /*!
    * Set the maximum torque.  This only works on cheetah 3!
@@ -96,6 +102,10 @@ class LegController {
   T _maxTorque = 0;
   bool _zeroEncoders = false;
   u32 _calibrateEncoders = 0;
+
+ // Custom
+ private:
+  SpineBoard _spineBoards[4];
 };
 
 template <typename T>

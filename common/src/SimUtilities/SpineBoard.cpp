@@ -136,3 +136,75 @@ void SpineBoard::run() {
   }
 
 }
+
+/*!
+ * Run spine board control
+ */
+void SpineBoard::run_cal() {
+  // iter_counter++;
+  if (cmd_cal == nullptr || data_cal == nullptr) {
+    printf(
+        "[ERROR: SPINE board] run_spine_board_iteration called with null "
+        "command or data!\n");
+    torque_out_cal[0] = 0.f;
+    torque_out_cal[1] = 0.f;
+    torque_out_cal[2] = 0.f;
+    return;
+  }
+
+  /// Check abad softstop ///
+  if (data_cal->q_abad[board_num] > q_limit_p[0]) {
+    torque_out_cal[0] = kp_softstop * (q_limit_p[0] - data_cal->q_abad[board_num]) -
+                    kd_softstop * (data_cal->qd_abad[board_num]) +
+                    cmd_cal->tau_abad_ff[board_num];
+  } else if (data_cal->q_abad[board_num] < q_limit_n[0]) {
+    torque_out_cal[0] = kp_softstop * (q_limit_n[0] - data_cal->q_abad[board_num]) -
+                    kd_softstop * (data_cal->qd_abad[board_num]) +
+                    cmd_cal->tau_abad_ff[board_num];
+  } else {
+    torque_out_cal[0] = cmd_cal->kp_abad[board_num] *
+                        (cmd_cal->q_des_abad[board_num] - data_cal->q_abad[board_num]) +
+                    cmd_cal->kd_abad[board_num] * (cmd_cal->qd_des_abad[board_num] -
+                                               data_cal->qd_abad[board_num]) +
+                    cmd_cal->tau_abad_ff[board_num];
+  }
+
+  /// Check hip softstop ///
+  if (data_cal->q_hip[board_num] > q_limit_p[1]) {
+    torque_out_cal[1] = kp_softstop * (q_limit_p[1] - data_cal->q_hip[board_num]) -
+                    kd_softstop * (data_cal->qd_hip[board_num]) +
+                    cmd_cal->tau_hip_ff[board_num];
+  } else if (data_cal->q_hip[board_num] < q_limit_n[1]) {
+    torque_out_cal[1] = kp_softstop * (q_limit_n[1] - data_cal->q_hip[board_num]) -
+                    kd_softstop * (data_cal->qd_hip[board_num]) +
+                    cmd_cal->tau_hip_ff[board_num];
+  } else {
+    torque_out_cal[1] = cmd_cal->kp_hip[board_num] *
+                        (cmd_cal->q_des_hip[board_num] - data_cal->q_hip[board_num]) +
+                    cmd_cal->kd_hip[board_num] *
+                        (cmd_cal->qd_des_hip[board_num] - data_cal->qd_hip[board_num]) +
+                    cmd_cal->tau_hip_ff[board_num];
+  }
+
+  /// No knee softstop right now ///
+  torque_out_cal[2] = cmd_cal->kp_knee[board_num] *
+                      (cmd_cal->q_des_knee[board_num] - data_cal->q_knee[board_num]) +
+                  cmd_cal->kd_knee[board_num] *
+                      (cmd_cal->qd_des_knee[board_num] - data_cal->qd_knee[board_num]) +
+                  cmd_cal->tau_knee_ff[board_num];
+
+  const float* torque_limits = disabled_torque;
+
+  if (cmd_cal->flags[board_num] & 0b1) {
+    if (cmd_cal->flags[board_num] & 0b10)
+      torque_limits = wimp_torque;
+    else
+      torque_limits = max_torque;
+  }
+
+  for (int i = 0; i < 3; i++) {
+    if (torque_out_cal[i] > torque_limits[i]) torque_out_cal[i] = torque_limits[i];
+    if (torque_out_cal[i] < -torque_limits[i]) torque_out_cal[i] = -torque_limits[i];
+  }
+
+}

@@ -204,6 +204,8 @@ void RobotRunner::setupStep() {
 void RobotRunner::finalizeStep() {
   if (robotType == RobotType::MINI_CHEETAH) {
     _legController->updateCommand(spiCommand);
+    // Custom
+    _legController->getTauEstimateFromActuatorModel(spiCommand, spiData);
   } else if (robotType == RobotType::CHEETAH_3) {
     _legController->updateCommand(tiBoardCommand);
   } else {
