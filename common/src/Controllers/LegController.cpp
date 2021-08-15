@@ -156,7 +156,7 @@ void LegController<T>::updateCommand(SpiCommand* spiCommand) {
     legTorque += datas[leg].J.transpose() * footForce;
 
     // Custom2
-    if (leg == 0)
+    if (leg == 1)
     {
       // Safety code temp
       if ((datas[leg].q(0) > 0.4) || (datas[leg].q(0) < -0.4))
@@ -180,10 +180,26 @@ void LegController<T>::updateCommand(SpiCommand* spiCommand) {
         legTorque(2) += commands[leg].tauFeedForwardBias(2);
       } else if(commands[leg].flag_hardcode_torque == 1)
       {
+        // AUTO ORIGINAL CODE
+        // // Hardcode legTorque:
+        // legTorque(0) += commands[leg].tauFeedForwardBias(0);
+        // legTorque(1) = -0.015;
+        // legTorque(2) = -3.159;
+
+        // // Hardcode PD
+        // commands[leg].kdJoint(0, 0) = 0;
+        // commands[leg].kdJoint(1, 1) = 0;
+        // commands[leg].kdJoint(2, 2) = 0;
+
+        // commands[leg].kpJoint(0, 0) = 0;
+        // commands[leg].kpJoint(1, 1) = 0;
+        // commands[leg].kpJoint(2, 2) = 0;
+
+        // 3 feet standing testing
         // Hardcode legTorque:
         legTorque(0) += commands[leg].tauFeedForwardBias(0);
-        legTorque(1) = -0.015;
-        legTorque(2) = -3.159;
+        legTorque(1) = 0;
+        legTorque(2) = -1;
 
         // Hardcode PD
         commands[leg].kdJoint(0, 0) = 0;
@@ -193,6 +209,15 @@ void LegController<T>::updateCommand(SpiCommand* spiCommand) {
         commands[leg].kpJoint(0, 0) = 0;
         commands[leg].kpJoint(1, 1) = 0;
         commands[leg].kpJoint(2, 2) = 0;
+
+        // printf("(Custom outputs18) Leg0 tau_ff: %f, %f, %f, %f, %f, %f\n", 
+        //       commands[leg].tauFeedForward[0], 
+        //       commands[leg].tauFeedForward[1], 
+        //       commands[leg].tauFeedForward[2],
+        //       commands[leg].forceFeedForward[0],
+        //       commands[leg].forceFeedForward[1],
+        //       commands[leg].forceFeedForward[2]
+        //       );
       }
       
       // joint space pd

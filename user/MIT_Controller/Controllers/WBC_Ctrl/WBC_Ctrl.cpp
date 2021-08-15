@@ -109,7 +109,7 @@ void WBC_Ctrl<T>::_UpdateLegCMD(ControlFSMData<T> & data){
     // Custom
     if(data._desiredStateCommand->rcCommand->mode != 23)
     {
-      if(leg == 0)
+      if(leg == 1)
       {
         cmd[leg].flag_hardcode_torque = 0;
       }
@@ -140,7 +140,7 @@ void WBC_Ctrl<T>::_UpdateLegCMD(ControlFSMData<T> & data){
     }
 
     // Custom (temp modification in the original controller)
-    if(leg == 0) //RF leg
+    if(leg == 1) //now: LF leg  old: RF leg
     {
       if(data._desiredStateCommand->rcCommand->mode == 22)
       {
@@ -161,12 +161,9 @@ void WBC_Ctrl<T>::_UpdateLegCMD(ControlFSMData<T> & data){
         cmd[leg].tauFeedForwardBias[2] = data._desiredStateCommand->rcCommand->tauFeedForwardBiasCounter_des[2];
 
         // Set hardcode torque flag
-        if(leg == 0)
-        {
-          cmd[leg].flag_hardcode_torque = 1;
-        }
+        cmd[leg].flag_hardcode_torque = 1;
       }
-    } 
+    }
   }
 
 

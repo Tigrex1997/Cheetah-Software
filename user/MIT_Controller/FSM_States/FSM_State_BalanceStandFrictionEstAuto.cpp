@@ -278,8 +278,17 @@ void FSM_State_BalanceStandFrictionEstAuto<T>::BalanceStandFrictionEstAutoStep()
     _wbc_data->vFoot_des[i].setZero();
     _wbc_data->aFoot_des[i].setZero();
     _wbc_data->Fr_des[i].setZero();
-    _wbc_data->Fr_des[i][2] = _body_weight/4.;
+    // Custom: 2nd changing for 3 feet standing (temp)
+    // _wbc_data->Fr_des[i][2] = _body_weight/4.;  // original
+    _wbc_data->Fr_des[i][2] = _body_weight/3.;
     _wbc_data->contact_state[i] = true;
+
+    // Custom: 2nd changing for 3 feet standing (temp)
+    if(i == 1)
+    {
+      _wbc_data->Fr_des[i][2] = 0.;
+      _wbc_data->contact_state[i] = false;
+    }
   }
   
   if(this->_data->_desiredStateCommand->trigger_pressed) {
