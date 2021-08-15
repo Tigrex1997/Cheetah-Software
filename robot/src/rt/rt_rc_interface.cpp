@@ -72,7 +72,7 @@ void sbus_packet_complete() {
   update_taranis_x7(&data);
 
   // Custom (Set RC input as 0s every iteration)
-  rc_control.zeroRCcontrol();
+  //rc_control.zeroRCcontrol();
 
   float v_scale = data.knobs[0]*1.5f + 2.0f; // from 0.5 to 3.5
   float w_scale = 2.*v_scale; // from 1.0 to 7.0
