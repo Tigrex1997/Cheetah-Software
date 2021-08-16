@@ -246,7 +246,7 @@ void LegController<T>::updateCommand(SpiCommand* spiCommand) {
         // Hardcode legTorque:
         legTorque(0) = 0.8 + commands[leg].tauFeedForwardBias(0);
         legTorque(1) = 0;
-        legTorque(2) = -1;
+        legTorque(2) = 0;
 
         // Hardcode PD
         commands[leg].kdJoint(0, 0) = 0;
@@ -254,8 +254,12 @@ void LegController<T>::updateCommand(SpiCommand* spiCommand) {
         commands[leg].kdJoint(2, 2) = 0;
 
         commands[leg].kpJoint(0, 0) = 0;
-        commands[leg].kpJoint(1, 1) = 0;
-        commands[leg].kpJoint(2, 2) = 0;
+        // commands[leg].kpJoint(1, 1) = 0;
+        // commands[leg].kpJoint(2, 2) = 0;
+
+        // commands[leg].qDes(0) = 1.8;
+        commands[leg].qDes(1) = -0.8;
+        commands[leg].qDes(2) = 1.8;
       }
       else if(leg != 1)
       {
