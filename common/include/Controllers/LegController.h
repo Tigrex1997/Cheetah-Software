@@ -53,6 +53,8 @@ struct LegControllerData {
   /*  added for detecting contact */
   Vec3<T> tauFeedback;
   Vec3<T> tauFeedforward;
+  /*  added for estimating tau_est more accurately (with Actuator Model) */
+  Vec3<T> tauEstimateFromActuatorModel;
 };
 
 /*!
@@ -75,6 +77,8 @@ class LegController {
   void setLcm(leg_control_data_lcmt* data, leg_control_command_lcmt* command);
   /*  added for contact estimation */
   void setLcm(control_torque_lcmt* data);
+  /* added for estimating tau_est more accurately (with Actuator Model) */
+  void getTauEstimateFromActuatorModel(SpiCommand* spiCommand, SpiData* spiData);
   
   /*!
    * Set the maximum torque.  This only works on cheetah 3!
@@ -88,6 +92,10 @@ class LegController {
   T _maxTorque = 0;
   bool _zeroEncoders = false;
   u32 _calibrateEncoders = 0;
+
+ // Custom
+ private:
+  SpineBoard _spineBoards[4];
 };
 
 template <typename T>

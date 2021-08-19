@@ -38,6 +38,11 @@ void LegControllerData<T>::zero() {
   v = Vec3<T>::Zero();
   J = Mat3<T>::Zero();
   tauEstimate = Vec3<T>::Zero();
+
+  // Custom
+  tauFeedback = Vec3<T>::Zero();
+  tauFeedforward = Vec3<T>::Zero();
+  tauEstimateFromActuatorModel = Vec3<T>::Zero();
 }
 
 /*!
@@ -233,6 +238,8 @@ void LegController<T>::setLcm(control_torque_lcmt* lcmData) {
       int idx = leg*3 + axis;
       lcmData->tau_feed_forward[idx] = datas[leg].tauFeedforward[axis];
       lcmData->tau_feed_back[idx] = datas[leg].tauFeedback[axis];
+      lcmData->tau_estimate[idx] = datas[leg].tauEstimate[axis];
+      lcmData->tau_estimate_actuator_model[idx] = datas[leg].tauEstimateFromActuatorModel[axis];
     }    
   }
   
@@ -267,6 +274,70 @@ void LegController<T>::setLcm(leg_control_data_lcmt *lcmData, leg_control_comman
             lcmCommand->kd_joint[idx] = commands[leg].kdJoint(axis, axis);
         }
     }
+}
+
+// Custom added for estimate tau_est more accurately (with Actuator Model)
+template <typename T>
+void LegController<T>::getTauEstimateFromActuatorModel(SpiCommand* spiCommand, SpiData* spiData)
+{
+  // double temp_abadGearRatio = 6;
+  // double temp_hipGearRatio = 6;
+  // double temp_kneeGearRatio = 9.33;
+  double temp_GearRatio[3] = {6, 6, 9.33};
+  double temp_motorTauMax = 3.f;
+  double temp_batteryV = 24;
+  double temp_motorKT = .05;  // this is flux linkage * pole pairs
+  double temp_motorR = 0.173;
+  double temp_jointDamping = .01;
+  double temp_jointDryFriction = .2;
+  //double temp_jointDamping = .0;
+  //double temp_jointDryFriction = .0;
+
+  // Init spine calculation
+  for(int leg = 0; leg < 4; leg++)
+  {
+    _spineBoards[leg].init(Quadruped<float>::getSideSign(leg), leg);
+    _spineBoards[leg].data_cal = spiData;
+    _spineBoards[leg].cmd_cal = spiCommand;
+  }
+
+  // Run spine board control
+  for (auto& spineBoard : _spineBoards) {
+    spineBoard.run_cal();
+  }
+
+  // Compute refined torques
+  for (int leg = 0; leg < 4; leg++)
+  {
+    for (int joint = 0; joint < 3; joint++)
+    {
+      // Get computed des torque
+      double temp_tauDes = _spineBoards[leg].torque_out_cal[joint];
+      double temp_qd = datas[leg].qd[joint];
+
+      // compute motor torque
+      double temp_tauDesMotor = temp_tauDes / temp_GearRatio[joint];  // motor torque
+      double temp_iDes = temp_tauDesMotor / (temp_motorKT * 1.5);  // i = tau / KT
+      // double bemf =  qd * _gr * _kt * 1.732;     // back emf
+      double temp_bemf = temp_qd * temp_GearRatio[joint] * temp_motorKT * 2.;       // back emf
+      double temp_vDes = temp_iDes * temp_motorR + temp_bemf;          // v = I*R + emf
+      double temp_vActual = coerce(temp_vDes, -temp_batteryV, temp_batteryV);  // limit to battery voltage
+      double temp_tauActMotor =
+          1.5 * temp_motorKT * (temp_vActual - temp_bemf) / temp_motorR;  // tau = Kt * I = Kt * V / R
+      double temp_tauAct = temp_GearRatio[joint] * coerce(temp_tauActMotor, -temp_motorTauMax, temp_motorTauMax);
+
+      // add damping and dry friction (set 1 as default)
+      if (1)
+        temp_tauAct = temp_tauAct - temp_jointDamping * temp_qd - temp_jointDryFriction * sgn(temp_qd);
+
+      // Final output to data for lcm (prepare)
+      datas[leg].tauEstimateFromActuatorModel[joint] = temp_tauAct;
+    }
+  }
+  // std::cout<< "(Custom outputs15) Tau_Est_Motor: "<< datas[0].tauEstimateFromActuatorModel[0] << ","
+  //           << datas[0].tauEstimateFromActuatorModel[1] << ","
+  //           << datas[0].tauEstimateFromActuatorModel[2]
+  //           << "\n";
 }
 
 template struct LegControllerCommand<double>;

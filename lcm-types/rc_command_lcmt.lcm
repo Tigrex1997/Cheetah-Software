@@ -1,0 +1,9 @@
+struct rc_command_lcmt {
+    float mode;
+    float p_des[2];
+    float height_variation;
+    float v_des[3];
+    float rpy_des[3];
+    float omega_des[3];
+    float variable[3];
+}

@@ -58,11 +58,17 @@ class SpineBoard {
   SpineBoard() {}
   void init(float side_sign, s32 board);
   void run();
+  // Custom
+  void run_cal();
   void resetData();
   void resetCommand();
   SpiCommand* cmd = nullptr;
   SpiData* data = nullptr;
   float torque_out[3];
+  // Custom
+  SpiCommand* cmd_cal = nullptr;
+  SpiData* data_cal = nullptr;
+  float torque_out_cal[3];
 
  private:
   float side_sign;

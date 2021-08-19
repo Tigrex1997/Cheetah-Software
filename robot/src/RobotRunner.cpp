@@ -204,6 +204,8 @@ void RobotRunner::setupStep() {
 void RobotRunner::finalizeStep() {
   if (robotType == RobotType::MINI_CHEETAH) {
     _legController->updateCommand(spiCommand);
+    // Custom
+    _legController->getTauEstimateFromActuatorModel(spiCommand, spiData);
   } else if (robotType == RobotType::CHEETAH_3) {
     _legController->updateCommand(tiBoardCommand);
   } else {
@@ -211,10 +213,12 @@ void RobotRunner::finalizeStep() {
   }
   _legController->setLcm(&leg_control_data_lcm, &leg_control_command_lcm);
   _legController->setLcm(&control_torque_lcm);
+  _desiredStateCommand->setLcm(&rc_command_lcm);
   _stateEstimate.setLcm(state_estimator_lcm);
   _lcm.publish("leg_control_command", &leg_control_command_lcm);
   _lcm.publish("leg_control_data", &leg_control_data_lcm);
   _lcm.publish("control_torque", &control_torque_lcm);
+  _lcm.publish("rc_command", &rc_command_lcm);
   _lcm.publish("state_estimator", &state_estimator_lcm);
   _iterations++;
 }

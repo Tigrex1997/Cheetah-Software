@@ -20,6 +20,9 @@
 #include "SimUtilities/GamepadCommand.h"
 #include "robot/include/rt/rt_rc_interface.h"
 
+// Custom for rc command logging
+#include "rc_command_lcmt.hpp"
+
 /**
  *
  */
@@ -71,6 +74,9 @@ public:
   void printRawInfo();
   void printStateCommandInfo();
   float deadband(float command, T minVal, T maxVal);
+
+  /*  added for rc command logging */
+  void setLcm(rc_command_lcmt* command);
 
   // These should come from the inferface
   T maxRoll = 0.4;
