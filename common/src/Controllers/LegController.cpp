@@ -238,47 +238,47 @@ void LegController<T>::updateCommand(SpiCommand* spiCommand) {
     }
 
     // For lateral force calibration (**MUST COMMENT WHEN NOT DOING LATERAL GRF CALIBRATION**)
-    if(commands[1].flag_hardcode_torque == 1) 
-    {
-      if(leg == 1)
-      {
-        // 3 feet standing testing
-        // Hardcode legTorque:
-        legTorque(0) = 0.8 + commands[leg].tauFeedForwardBias(0);
-        legTorque(1) = 0;
-        legTorque(2) = 0;
+    // if(commands[1].flag_hardcode_torque == 1) 
+    // {
+    //   if(leg == 1)
+    //   {
+    //     // 3 feet standing testing
+    //     // Hardcode legTorque:
+    //     legTorque(0) = 0.8 + commands[leg].tauFeedForwardBias(0);
+    //     legTorque(1) = 0;
+    //     legTorque(2) = 0;
 
-        // Hardcode PD
-        commands[leg].kdJoint(0, 0) = 0;
-        commands[leg].kdJoint(1, 1) = 0;
-        commands[leg].kdJoint(2, 2) = 0;
+    //     // Hardcode PD
+    //     commands[leg].kdJoint(0, 0) = 0;
+    //     commands[leg].kdJoint(1, 1) = 0;
+    //     commands[leg].kdJoint(2, 2) = 0;
 
-        commands[leg].kpJoint(0, 0) = 0;
-        // commands[leg].kpJoint(1, 1) = 0;
-        // commands[leg].kpJoint(2, 2) = 0;
+    //     commands[leg].kpJoint(0, 0) = 0;
+    //     // commands[leg].kpJoint(1, 1) = 0;
+    //     // commands[leg].kpJoint(2, 2) = 0;
 
-        // commands[leg].qDes(0) = 1.8;
-        commands[leg].qDes(1) = -0.8;
-        commands[leg].qDes(2) = 1.8;
-      }
-      else if(leg != 1)
-      {
-        // Disable RF, RH, LH legs for lateral force
-        // Hardcode legTorque:
-        legTorque(0) = 0;
-        legTorque(1) = 0;
-        legTorque(2) = 0;
+    //     // commands[leg].qDes(0) = 1.8;
+    //     commands[leg].qDes(1) = -0.8;
+    //     commands[leg].qDes(2) = 1.8;
+    //   }
+    //   else if(leg != 1)
+    //   {
+    //     // Disable RF, RH, LH legs for lateral force
+    //     // Hardcode legTorque:
+    //     legTorque(0) = 0;
+    //     legTorque(1) = 0;
+    //     legTorque(2) = 0;
 
-        // Hardcode PD
-        commands[leg].kdJoint(0, 0) = 0;
-        commands[leg].kdJoint(1, 1) = 0;
-        commands[leg].kdJoint(2, 2) = 0;
+    //     // Hardcode PD
+    //     commands[leg].kdJoint(0, 0) = 0;
+    //     commands[leg].kdJoint(1, 1) = 0;
+    //     commands[leg].kdJoint(2, 2) = 0;
 
-        commands[leg].kpJoint(0, 0) = 0;
-        commands[leg].kpJoint(1, 1) = 0;
-        commands[leg].kpJoint(2, 2) = 0;
-      }
-    }
+    //     commands[leg].kpJoint(0, 0) = 0;
+    //     commands[leg].kpJoint(1, 1) = 0;
+    //     commands[leg].kpJoint(2, 2) = 0;
+    //   }
+    // }
 
     // set command:
     spiCommand->tau_abad_ff[leg] = legTorque(0);

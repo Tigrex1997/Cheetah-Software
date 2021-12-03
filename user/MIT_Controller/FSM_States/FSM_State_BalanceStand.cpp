@@ -44,10 +44,10 @@ void FSM_State_BalanceStand<T>::onEnter() {
   this->_data->_gaitScheduler->gaitData._nextGait = GaitType::STAND;
   
   // Origin
-  // _ini_body_pos = (this->_data->_stateEstimator->getResult()).position;
+  _ini_body_pos = (this->_data->_stateEstimator->getResult()).position;
   // Bug fixed
   // rpy is defined in world frame, but robot need rpy in body frame here
-  _ini_body_pos = (this->_data->_stateEstimator->getResult()).rBody * (this->_data->_stateEstimator->getResult()).position;
+  // _ini_body_pos = (this->_data->_stateEstimator->getResult()).rBody * (this->_data->_stateEstimator->getResult()).position;
 
   if(_ini_body_pos[2] < 0.2) {
     _ini_body_pos[2] = 0.3;
@@ -205,7 +205,15 @@ TransitionData<T> FSM_State_BalanceStand<T>::transition() {
 
     // Custom
     case FSM_StateName::BALANCE_STAND_FRICTION_EST:
-      this->transitionData.done = true;
+      BalanceStandStep();
+
+      _iter++;
+      if (_iter >= this->transitionDuration * 1000) {
+        this->transitionData.done = true;
+      } else {
+        this->transitionData.done = false;
+      }
+
       break;
 
     default:

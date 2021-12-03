@@ -44,10 +44,10 @@ void FSM_State_BalanceStandFrictionEstAuto<T>::onEnter() {
   this->_data->_gaitScheduler->gaitData._nextGait = GaitType::STAND;
   
   // Origin
-  // _ini_body_pos = (this->_data->_stateEstimator->getResult()).position;
+  _ini_body_pos = (this->_data->_stateEstimator->getResult()).position;
   // Bug fixed
   // rpy is defined in world frame, but robot need rpy in body frame here
-  _ini_body_pos = (this->_data->_stateEstimator->getResult()).rBody * (this->_data->_stateEstimator->getResult()).position;
+  // _ini_body_pos = (this->_data->_stateEstimator->getResult()).rBody * (this->_data->_stateEstimator->getResult()).position;
 
   if(_ini_body_pos[2] < 0.2) {
     _ini_body_pos[2] = 0.3;
@@ -280,15 +280,15 @@ void FSM_State_BalanceStandFrictionEstAuto<T>::BalanceStandFrictionEstAutoStep()
     _wbc_data->Fr_des[i].setZero();
     // Custom: 2nd changing for 3 feet standing (temp)
     // _wbc_data->Fr_des[i][2] = _body_weight/4.;  // original
-    _wbc_data->Fr_des[i][2] = _body_weight/3.;
+    _wbc_data->Fr_des[i][2] = _body_weight/4.;
     _wbc_data->contact_state[i] = true;
 
     // Custom: 2nd changing for 3 feet standing (temp)
-    if(i == 1)
-    {
-      _wbc_data->Fr_des[i][2] = 0.;
-      _wbc_data->contact_state[i] = false;
-    }
+    // if(i == 1)
+    // {
+    //   _wbc_data->Fr_des[i][2] = 0.;
+    //   _wbc_data->contact_state[i] = false;
+    // }
   }
   
   if(this->_data->_desiredStateCommand->trigger_pressed) {
