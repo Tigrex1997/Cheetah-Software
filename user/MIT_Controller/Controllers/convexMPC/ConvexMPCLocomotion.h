@@ -129,6 +129,7 @@ private:
   void solveDenseMPC(int *mpcTable, ControlFSMData<float> &data);
   void solveSparseMPC(int *mpcTable, ControlFSMData<float> &data);
   void initSparseMPC();
+  void initSparseMPC_ES(); // errorState
   int iterationsBetweenMPC;
   int horizonLength;
   int default_iterations_between_mpc;

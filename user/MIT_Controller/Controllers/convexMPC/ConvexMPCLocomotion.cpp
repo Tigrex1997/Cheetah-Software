@@ -5,7 +5,7 @@
 #include "ConvexMPCLocomotion.h"
 #include "convexMPC_interface.h"
 #include "../../../../common/FootstepPlanner/GraphSearch.h"
-
+//#include "stdlib.h"
 #include "Gait.h"
 
 //#define DRAW_DEBUG_SWINGS
@@ -53,7 +53,7 @@ ConvexMPCLocomotion::ConvexMPCLocomotion(float _dt, int _iterations_between_mpc,
   for(int i = 0; i < 4; i++)
     firstSwing[i] = true;
 
-  initSparseMPC();
+  initSparseMPC_ES();
 
    pBody_des.setZero();
    vBody_des.setZero();
@@ -562,6 +562,9 @@ void ConvexMPCLocomotion::updateMPCIfNeeded(int *mpcTable, ControlFSMData<float>
     } else {
       solveDenseMPC(mpcTable, data);
     }
+    //std::cout << "RPY_des: " << data._desiredStateCommand->rcCommand->rpy_des << std::endl;
+    std::cout << "vb_x_des: " << _x_vel_des << std::endl;
+    std::cout << "vb_y_des: " << _y_vel_des << std::endl;
     //printf("TOTAL SOLVE TIME: %.3f\n", solveTimer.getMs());
   }
 
@@ -665,7 +668,23 @@ void ConvexMPCLocomotion::solveSparseMPC(int *mpcTable, ControlFSMData<float> &d
   _sparseCMPC.setContactTrajectory(contactStates.data(), contactStates.size());
   _sparseCMPC.setStateTrajectory(_sparseTrajectory);
   _sparseCMPC.setFeet(feet);
-  _sparseCMPC.run();
+  // std::cout << "**PARAMS OF SCMPC: " << _parameters->cmpc_use_sparse << std::endl;
+  if(_parameters->cmpc_use_sparse > 3.5) {
+    _sparseCMPC.run_ES_3(); // 3rd version
+    std::cout << "***RUNNING 3rd version SCMPC!**" << std::endl;
+  }
+  else if(_parameters->cmpc_use_sparse > 2.5) {
+    _sparseCMPC.run_ES_2(); // 2nd version
+    std::cout << "***RUNNING 2nd version SCMPC!**" << std::endl;
+  }
+  else if(_parameters->cmpc_use_sparse > 1.5) {
+    _sparseCMPC.run_ES_1(); // 1st version
+    std::cout << "***RUNNING 1st version SCMPC!**" << std::endl;
+  }
+  else {
+    _sparseCMPC.run(); // origin
+    std::cout << "***RUNNING ORIGIN SCMPC!**" << std::endl;
+  }
 
   Vec12<float> resultForce = _sparseCMPC.getResult();
 
@@ -677,6 +696,7 @@ void ConvexMPCLocomotion::solveSparseMPC(int *mpcTable, ControlFSMData<float> &d
   }
 }
 
+// origin
 void ConvexMPCLocomotion::initSparseMPC() {
   Mat3<double> baseInertia;
   baseInertia << 0.07, 0, 0,
@@ -701,4 +721,28 @@ void ConvexMPCLocomotion::initSparseMPC() {
 
   _sparseTrajectory.resize(horizonLength);
 }
+// errorState
+void ConvexMPCLocomotion::initSparseMPC_ES() {
+  Mat3<double> baseInertia;
+  baseInertia << 0.07, 0, 0,
+              0, 0.26, 0,
+              0, 0, 0.242;
+  double mass = 9;
+  double maxForce = 120;
 
+  std::vector<double> dtTraj;
+  for(int i = 0; i < horizonLength; i++) {
+    dtTraj.push_back(dtMPC);
+  }
+
+  Vec12<double> weights;
+  weights << 1, 1, 10, 2, 2, 20, 0, 0, 0.3, 0.2, 0.2, 0.2;
+  //weights << 0,0,0,1,1,10,0,0,0,0.2,0.2,0;
+
+  _sparseCMPC.setRobotParameters(baseInertia, mass, maxForce);
+  _sparseCMPC.setFriction(0.4);
+  _sparseCMPC.setWeights(weights, 4e-5);
+  _sparseCMPC.setDtTrajectory(dtTraj);
+
+  _sparseTrajectory.resize(horizonLength);
+}

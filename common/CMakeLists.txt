@@ -12,9 +12,16 @@ include_directories(${CMAKE_BINARY_DIR})
 include_directories(${PROJECT_SOURCE_DIR})
 file(GLOB_RECURSE sources "src/*.cpp")                   # common library cpp files
 
+find_package(Sophus REQUIRED)
+message("Sophus dir ${Sophus_INCLUDE_DIRS}")
+message("Sophus lib ${Sophus_LIBRARIES}")
+include_directories(${Sophus_INCLUDE_DIRS})
+find_package(fmt REQUIRED)
+#include_directories(${fmt_INCLUDE_DIRS})
+
 # Library
 add_library(biomimetics SHARED ${sources})       # produce a library used by sim/robot
-target_link_libraries(biomimetics inih dynacore_param_handler JCQP osqp)
+target_link_libraries(biomimetics inih dynacore_param_handler JCQP osqp Sophus::Sophus fmt::fmt)
 
 if(CMAKE_SYSTEM_NAME MATCHES Linux)
 # Pull in Google Test
